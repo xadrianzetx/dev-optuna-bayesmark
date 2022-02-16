@@ -1,10 +1,9 @@
-from typing import Dict, List, Union
 from collections import deque
+from typing import Dict, List, Union
 
 import optuna
 from bayesmark.abstract_optimizer import AbstractOptimizer
 from bayesmark.experiment import experiment_main
-
 
 X = Dict[str, Union[int, float]]
 optuna.logging.disable_default_handler()
