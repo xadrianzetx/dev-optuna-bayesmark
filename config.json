@@ -1,0 +1,10 @@
+{
+    "RandomSearch-New": [
+        "random_optimizer.py",
+        {}
+    ],
+    "OptunaSearch": [
+        "optuna_optimizer.py",
+        {}
+    ]
+}
