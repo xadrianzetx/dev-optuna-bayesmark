@@ -1,4 +1,3 @@
-from collections import deque
 from typing import Dict, List, Union
 
 import optuna
@@ -19,7 +18,7 @@ class OptunaOptimizer(AbstractOptimizer):
         # FIXME We don't have info about metric being optimized
         # so we can't determine direction.
         self.study = optuna.create_study(direction="maximize")
-        self.current_trials = deque()
+        self.current_trials: Dict[int, int] = {}
 
     def _suggest(self, trial: optuna.trial.Trial) -> X:
 
@@ -39,24 +38,21 @@ class OptunaOptimizer(AbstractOptimizer):
 
     def suggest(self, n_suggestions: int) -> List[X]:
 
-        # n_suggestions is controlled by -p or --suggestions flag and defaults
-        # to 1 then we can ask n_suggestions trials and run optimization for
-        # them in parralel ... maybe?
         next_guess: List[X] = []
         for _ in range(n_suggestions):
             trial = self.study.ask()
-            # FIXME: I'm not sure if order in `observe` is guaranteed
-            # to be preserved when n_suggestions != 1.
-            self.current_trials.append(trial.number)
             suggestions = self._suggest(trial)
+            sid = hash(frozenset(suggestions.items()))
+            self.current_trials[sid] = trial.number
             next_guess.append(suggestions)
 
         return next_guess
 
     def observe(self, X: List[X], y: List[float]) -> None:
 
-        for objective_value in y:
-            trial = self.current_trials.popleft()
+        for params, objective_value in zip(X, y):
+            sid = hash(frozenset(params.items()))
+            trial = self.current_trials.pop(sid)
             self.study.tell(trial, objective_value)
 
 
