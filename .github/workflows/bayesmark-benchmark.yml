@@ -31,7 +31,8 @@ jobs:
 
     strategy:
       matrix:
-        dataset: [breast, digits, iris, wine, boston, diabetes]
+        dataset: [breast, digits, iris, wine]
+        # dataset: [breast, digits, iris, wine, boston, diabetes]
 
     steps:
     - name: Checkout
