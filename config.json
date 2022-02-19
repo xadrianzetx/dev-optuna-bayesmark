@@ -1,0 +1,23 @@
+{
+    "RandomSampler-NopPruner-Optuna": [
+        "optuna_optimizer.py",
+        {
+            "sampler": "RandomSampler",
+            "sampler_kwargs": {},
+            "pruner": "NopPruner",
+            "pruner_kwargs": {}
+        }
+    ],
+    "TPESampler-NopPruner-Optuna": [
+        "optuna_optimizer.py",
+        {
+            "sampler": "TPESampler",
+            "sampler_kwargs": {
+                "multivariate": true,
+                "constant_liar": true
+            },
+            "pruner": "NopPruner",
+            "pruner_kwargs": {}
+        }
+    ]
+}
