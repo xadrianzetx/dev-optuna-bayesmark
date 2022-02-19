@@ -59,6 +59,7 @@ jobs:
 
     - name: Run performance benchmark
       run: |
+        mkdir runs
         python run_bayesmark.py \
           --dataset ${{ matrix.dataset }} \
           --budget 15 \
