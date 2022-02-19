@@ -1,0 +1,69 @@
+name: Performance Benchmarks with bayesmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      sampler-list:
+        description: 'Sampler List: A list of samplers to check the performance. Should be a whitespace-separated list of Optuna samplers. Each sampler must exist under `optuna.samplers` or `optuna.integration`.'
+        required: false
+        default: 'RandomSampler TPESampler'
+      sampler-kwargs-list:
+        description: 'Sampler Arguments List: A list of sampler keyword arguments. Should be a whitespace-separated list of json format dictionaries.'
+        required: false
+        default: '{} {\"multivariate\":true,\"constant_liar\":true}'
+      pruner-list:
+        description: 'Pruner List: A list of pruners to check the performance. Should be a whitespace-separated list of Optuna pruners. Each pruner must exist under `optuna.pruners`.'
+        required: false
+        default: 'NopPruner'
+      pruner-kwargs-list:
+        description: 'Pruner Arguments List: A list of pruner keyword arguments. Should be a whitespace-separated list of json format dictionaries.'
+        required: false
+        default: '{}'
+      n-runs:
+        description: 'Number of Studies'
+        required: false
+        default: '10'
+
+
+jobs:
+  performance-benchmarks-bayesmark:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dataset: [breast, digits, iris, wine, boston, diabetes]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Python3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install gnuplot
+      run: |
+        sudo apt update
+        sudo apt -y install gnuplot
+
+    - name: Install Python libralies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --progress-bar off -U setuptools wheel
+        # Install minimal dependencies and confirm that `import optuna` is successful.
+        pip install --progress-bar off -U --pre optuna
+        python -c 'import optuna'
+        optuna --version
+        pip install --progress-bar off bayesmark
+
+    - name: Run performance benchmark
+      run: |
+        python run_bayesmark.py \
+          --dataset ${{ matrix.dataset }}
+          --budget 15 \
+          --repeat 3 \
+          --sampler-list '${{ github.event.inputs.sampler-list }}' \
+          --sampler-kwargs-list '${{ github.event.inputs.sampler-kwargs-list }}' \
+          --pruner-list '${{ github.event.inputs.pruner-list }}' \
+          --pruner-kwargs-list '${{ github.event.inputs.pruner-kwargs-list }}'
