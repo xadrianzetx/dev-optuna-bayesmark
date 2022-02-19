@@ -31,13 +31,13 @@ def run(args: argparse.Namespace) -> None:
         f"-o RandomSearch {samplers} "
         f"-c kNN -d {args.dataset} -m acc --opt-root . -v"
     )
-    subprocess.run(cmd)
+    subprocess.run(cmd, shell=True)
 
     cmd = "bayesmark-agg -dir runs -b bo_debug_run"
-    subprocess.run(cmd)
+    subprocess.run(cmd, shell=True)
 
     cmd = "bayesmark-anal -dir runs -b bo_debug_run -v"
-    subprocess.run(cmd)
+    subprocess.run(cmd, shell=True)
 
 
 if __name__ == "__main__":
