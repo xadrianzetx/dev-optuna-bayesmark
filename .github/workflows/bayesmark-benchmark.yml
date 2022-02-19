@@ -10,7 +10,7 @@ on:
       sampler-kwargs-list:
         description: 'Sampler Arguments List: A list of sampler keyword arguments. Should be a whitespace-separated list of json format dictionaries.'
         required: false
-        default: '{} {\"multivariate\":true,\"constant_liar\":true}'
+        default: '{} {"multivariate":true,"constant_liar":true}'
       pruner-list:
         description: 'Pruner List: A list of pruners to check the performance. Should be a whitespace-separated list of Optuna pruners. Each pruner must exist under `optuna.pruners`.'
         required: false
