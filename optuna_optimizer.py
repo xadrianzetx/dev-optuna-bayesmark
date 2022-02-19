@@ -3,9 +3,15 @@ from typing import Dict, List, Union
 import optuna
 from bayesmark.abstract_optimizer import AbstractOptimizer
 from bayesmark.experiment import experiment_main
+from optuna.pruners import NopPruner
+from optuna.samplers import RandomSampler, TPESampler
 
 X = Dict[str, Union[int, float]]
-optuna.logging.disable_default_handler()
+SAMPLERS = {
+    "RandomSampler": RandomSampler,
+    "TPESampler": TPESampler,
+}
+PRUNERS = {"NopPruner": NopPruner}
 
 
 class OptunaOptimizer(AbstractOptimizer):
@@ -15,9 +21,19 @@ class OptunaOptimizer(AbstractOptimizer):
     def __init__(self, api_config, **kwargs):
 
         super().__init__(api_config, **kwargs)
+
+        sampler = SAMPLERS[kwargs.get("sampler")]
+        sampler_kwargs = kwargs.get("sampler_kwargs")
+        pruner = PRUNERS[kwargs.get("pruner")]
+        pruner_kwargs = kwargs.get("pruner_kwargs")
+
         # FIXME We don't have info about metric being optimized
         # so we can't determine direction.
-        self.study = optuna.create_study(direction="maximize")
+        self.study = optuna.create_study(
+            direction="maximize",
+            sampler=sampler(**sampler_kwargs),
+            pruner=pruner(**pruner_kwargs),
+        )
         self.current_trials: Dict[int, int] = {}
 
     def _suggest(self, trial: optuna.trial.Trial) -> X:
@@ -57,4 +73,5 @@ class OptunaOptimizer(AbstractOptimizer):
 
 
 if __name__ == "__main__":
+    optuna.logging.disable_default_handler()
     experiment_main(OptunaOptimizer)
