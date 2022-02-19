@@ -73,12 +73,12 @@ jobs:
     
     - uses: actions/upload-artifact@v2
       with:
-        name: benchmark-report
+        name: ${{ matrix.dataset }}-report
         path: |
-          output.png
+          *.png
 
-    - uses: actions/download-artifact@v2
-      with:
-        name: benchmark-report
-        path: |
-          output.png
+    # - uses: actions/download-artifact@v2
+    #   with:
+    #     name: ${{ matrix.dataset }}-report
+    #     path: |
+    #       output.png
