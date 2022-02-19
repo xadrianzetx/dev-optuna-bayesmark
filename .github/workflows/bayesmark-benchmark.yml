@@ -60,7 +60,7 @@ jobs:
     - name: Run performance benchmark
       run: |
         python run_bayesmark.py \
-          --dataset ${{ matrix.dataset }}
+          --dataset ${{ matrix.dataset }} \
           --budget 15 \
           --repeat 3 \
           --sampler-list '${{ github.event.inputs.sampler-list }}' \
