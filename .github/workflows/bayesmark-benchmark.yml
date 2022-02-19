@@ -56,6 +56,7 @@ jobs:
         python -c 'import optuna'
         optuna --version
         pip install --progress-bar off bayesmark
+        pip install --progress-bar off matplotlib
 
     - name: Run performance benchmark
       run: |
@@ -68,3 +69,15 @@ jobs:
           --sampler-kwargs-list '${{ github.event.inputs.sampler-kwargs-list }}' \
           --pruner-list '${{ github.event.inputs.pruner-list }}' \
           --pruner-kwargs-list '${{ github.event.inputs.pruner-kwargs-list }}'
+    
+    - uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-report
+        path: |
+          output.png
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: benchmark-report
+        path: |
+          output.png

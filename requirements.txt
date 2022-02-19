@@ -1,2 +1,4 @@
 optuna
 bayesmark
+matplotlib
+numpy

@@ -1,6 +1,16 @@
 import argparse
 import json
+import os
 import subprocess
+from typing import Any
+
+import bayesmark.constants as cc
+import matplotlib.pyplot as plt
+import numpy as np
+from bayesmark.constants import (ITER, METHOD, OBJECTIVE, TEST_CASE,
+                                 VISIBLE_TO_OPT)
+from bayesmark.serialize import XRSerializer
+from matplotlib import cm, colors
 
 
 def run(args: argparse.Namespace) -> None:
@@ -40,6 +50,80 @@ def run(args: argparse.Namespace) -> None:
     subprocess.run(cmd, shell=True)
 
 
+def visuals() -> None:
+
+    db_root = os.path.abspath("runs")
+    dbid = "bo_debug_run"
+
+    # FIXME correct key?
+    summary_ds, _ = XRSerializer.load_derived(db_root, db=dbid, key=cc.PERF_RESULTS)
+    method_to_rgba = build_color_dict(summary_ds.coords[METHOD].values.tolist())
+    method_list = summary_ds.coords[METHOD].values
+
+    fig, axarr = plt.subplots(1, 2, figsize=(16, 8))
+    for func_name in summary_ds.coords[TEST_CASE].values:
+        plt.sca(axarr[0])
+        for method_name in method_list:
+            curr_ds = summary_ds.sel(
+                {TEST_CASE: func_name, METHOD: method_name, OBJECTIVE: VISIBLE_TO_OPT}
+            )
+
+            plt.fill_between(
+                curr_ds.coords[ITER].values,
+                curr_ds[cc.LB_MED].values,
+                curr_ds[cc.UB_MED].values,
+                color=method_to_rgba[method_name],
+                alpha=0.5,
+            )
+            plt.plot(
+                curr_ds.coords[ITER].values,
+                curr_ds[cc.PERF_MED].values,
+                color=method_to_rgba[method_name],
+                label=method_name,
+            )
+        plt.xlabel("evaluation", fontsize=10)
+        plt.ylabel("median score", fontsize=10)
+        plt.title(func_name)
+        plt.legend()
+
+        plt.sca(axarr[1])
+        for method_name in method_list:
+            curr_ds = summary_ds.sel(
+                {TEST_CASE: func_name, METHOD: method_name, OBJECTIVE: VISIBLE_TO_OPT}
+            )
+
+            plt.fill_between(
+                curr_ds.coords[ITER].values,
+                curr_ds[cc.LB_MEAN].values,
+                curr_ds[cc.UB_MEAN].values,
+                color=method_to_rgba[method_name],
+                alpha=0.5,
+            )
+            plt.plot(
+                curr_ds.coords[ITER].values,
+                curr_ds[cc.PERF_MEAN].values,
+                color=method_to_rgba[method_name],
+                label=method_name,
+            )
+        plt.xlabel("evaluation", fontsize=10)
+        plt.ylabel("mean score", fontsize=10)
+        plt.title(func_name)
+        plt.legend()
+
+    fig.savefig("output.png")
+
+
+def build_color_dict(names: Any) -> Any:
+
+    # FIXME type hints
+    norm = colors.Normalize(vmin=0, vmax=1)
+    m = cm.ScalarMappable(norm, cm.tab20)
+    color_dict = m.to_rgba(np.linspace(0, 1, len(names)))
+    color_dict = dict(zip(names, color_dict))
+
+    return color_dict
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="iris")
@@ -57,3 +141,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     run(args)
+    try:
+        visuals()
+    except Exception as e:
+        print(f"Caught: {str(e)}")
