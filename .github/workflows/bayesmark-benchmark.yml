@@ -35,7 +35,7 @@ jobs:
 
     strategy:
       matrix:
-        dataset: [breast, digits, iris, wine]
+        dataset: [breast, iris, wine]
         # dataset: [breast, digits, iris, wine, boston, diabetes]
 
     steps:
@@ -78,11 +78,18 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.dataset }}-report
-        path: |
-          *.png
+        path: ./*.png
 
-    # - uses: actions/download-artifact@v2
-    #   with:
-    #     name: ${{ matrix.dataset }}-report
-    #     path: |
-    #       output.png
+  build-report:
+    needs: performance-benchmarks-bayesmark
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: actions/download-artifact@v2
+      with:
+        path: ./*.png
+    
+    - name: List artifacts
+      run: ls -R
