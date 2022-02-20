@@ -66,6 +66,7 @@ jobs:
     - name: Run performance benchmark
       run: |
         mkdir runs
+        mkdir out
         python run_bayesmark.py \
           --dataset ${{ matrix.dataset }} \
           --budget ${{ github.event.inputs.budget }} \
@@ -78,7 +79,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.dataset }}-report
-        path: ./*.png
+        path: out/*.png
 
   build-report:
     needs: performance-benchmarks-bayesmark
@@ -89,7 +90,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        path: ./*.png
+        path: out/*.png
     
     - name: List artifacts
-      run: ls -R
+      run: ls -R out

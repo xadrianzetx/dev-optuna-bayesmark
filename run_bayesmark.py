@@ -113,7 +113,7 @@ def visuals(args: argparse.Namespace) -> None:
 
     dataset = args.dataset
     model = "knn"  # TODO add to matrix
-    fig.savefig(f"optuna-{dataset}-{model}-sumamry.png")
+    fig.savefig(f"out/optuna-{dataset}-{model}-sumamry.png")
 
 
 def build_color_dict(names: Any) -> Any:
