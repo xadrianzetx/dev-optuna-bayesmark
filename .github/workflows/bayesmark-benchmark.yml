@@ -19,10 +19,14 @@ on:
         description: 'Pruner Arguments List: A list of pruner keyword arguments. Should be a whitespace-separated list of json format dictionaries.'
         required: false
         default: '{}'
-      n-runs:
+      budget:
+        description: 'Number of trials'
+        required: false
+        default: '15'
+      repeat:
         description: 'Number of Studies'
         required: false
-        default: '10'
+        default: '3'
 
 
 jobs:
@@ -64,8 +68,8 @@ jobs:
         mkdir runs
         python run_bayesmark.py \
           --dataset ${{ matrix.dataset }} \
-          --budget 15 \
-          --repeat 3 \
+          --budget ${{ github.event.inputs.budget }} \
+          --repeat ${{ github.event.inputs.repeat }} \
           --sampler-list '${{ github.event.inputs.sampler-list }}' \
           --sampler-kwargs-list '${{ github.event.inputs.sampler-kwargs-list }}' \
           --pruner-list '${{ github.event.inputs.pruner-list }}' \
