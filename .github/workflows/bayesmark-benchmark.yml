@@ -78,8 +78,7 @@ jobs:
     
     - uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.dataset }}-report
-        path: out/*.png
+        path: out
 
   build-report:
     needs: performance-benchmarks-bayesmark
@@ -90,7 +89,7 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        path: out/*.png
+        path: out
     
     - name: List artifacts
       run: ls -R out
