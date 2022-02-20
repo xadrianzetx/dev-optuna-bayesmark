@@ -145,6 +145,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     run(args)
     try:
-        visuals()
+        visuals(args)
     except Exception as e:
         print(f"Caught: {str(e)}")
