@@ -30,7 +30,7 @@ on:
 
 
 jobs:
-  performance-benchmarks-bayesmark:
+  benchmark:
     runs-on: ubuntu-latest
 
     strategy:
@@ -81,7 +81,7 @@ jobs:
         path: out
 
   build-report:
-    needs: performance-benchmarks-bayesmark
+    needs: benchmark
     runs-on: ubuntu-latest
 
     steps:
@@ -91,5 +91,10 @@ jobs:
       with:
         path: out
     
-    - name: List artifacts
-      run: ls -R out
+    - uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-report
+        path: out/artifact
+    
+    # - name: List artifacts
+    #   run: ls -R out
