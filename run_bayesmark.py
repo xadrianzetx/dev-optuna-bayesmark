@@ -50,8 +50,9 @@ def run(args: argparse.Namespace) -> None:
     subprocess.run(cmd, shell=True)
 
 
-def visuals() -> None:
+def visuals(args: argparse.Namespace) -> None:
 
+    # https://github.com/uber/bayesmark/tree/master/notebooks
     db_root = os.path.abspath("runs")
     dbid = "bo_debug_run"
 
@@ -110,7 +111,9 @@ def visuals() -> None:
         plt.title(func_name)
         plt.legend()
 
-    fig.savefig("output.png")
+    dataset = args.dataset
+    model = "knn"  # TODO add to matrix
+    fig.savefig(f"optuna-{dataset}-{model}-sumamry.png")
 
 
 def build_color_dict(names: Any) -> Any:
