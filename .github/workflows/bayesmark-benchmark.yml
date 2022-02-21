@@ -35,8 +35,8 @@ jobs:
 
     strategy:
       matrix:
-        dataset: [breast, iris, wine]
-        # dataset: [breast, digits, iris, wine, boston, diabetes]
+        dataset: [breast, digits, iris, wine, diabetes]
+        model: [kNN, SVM, DT, RF, MLP-sgd, ada, linear]
 
     steps:
     - name: Checkout
@@ -69,6 +69,7 @@ jobs:
         mkdir out
         python run_bayesmark.py \
           --dataset ${{ matrix.dataset }} \
+          --model ${{ matrix.model }} \
           --budget ${{ github.event.inputs.budget }} \
           --repeat ${{ github.event.inputs.repeat }} \
           --sampler-list '${{ github.event.inputs.sampler-list }}' \
@@ -95,6 +96,3 @@ jobs:
       with:
         name: benchmark-report
         path: out/artifact
-    
-    # - name: List artifacts
-    #   run: ls -R out

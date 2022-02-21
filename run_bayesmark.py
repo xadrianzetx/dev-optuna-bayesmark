@@ -36,10 +36,11 @@ def run(args: argparse.Namespace) -> None:
         json.dump(config, file, indent=4)
 
     samplers = " ".join(config.keys())
+    metric = "nll" if args.dataset in ["breast", "iris", "wine", "digits"] else "mse"
     cmd = (
         f"bayesmark-launch -n {args.budget} -r {args.repeat} -dir runs -b bo_debug_run "
         f"-o RandomSearch {samplers} "
-        f"-c kNN -d {args.dataset} -m acc --opt-root . -v"
+        f"-c {args.model} -d {args.dataset} -m {metric} --opt-root . -v"
     )
     subprocess.run(cmd, shell=True)
 
@@ -112,7 +113,7 @@ def visuals(args: argparse.Namespace) -> None:
         plt.legend()
 
     dataset = args.dataset
-    model = "knn"  # TODO add to matrix
+    model = args.model
     fig.savefig(f"out/optuna-{dataset}-{model}-sumamry.png")
 
 
@@ -130,6 +131,7 @@ def build_color_dict(names: Any) -> Any:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="iris")
+    parser.add_argument("--model", type=str, default="kNN")
     parser.add_argument("--budget", type=int, default=15)
     parser.add_argument("--repeat", type=int, default=3)
     parser.add_argument("--sampler-list", type=str, default="RandomSampler TPESampler")
