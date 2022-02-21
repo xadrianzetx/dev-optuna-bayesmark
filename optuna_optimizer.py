@@ -27,10 +27,10 @@ class OptunaOptimizer(AbstractOptimizer):
         pruner = PRUNERS[kwargs.get("pruner")]
         pruner_kwargs = kwargs.get("pruner_kwargs")
 
-        # FIXME We don't have info about metric being optimized
-        # so we can't determine direction.
+        # We are using negative log-likelihood for classification
+        # and MSE for regression. Both are minimized.
         self.study = optuna.create_study(
-            direction="maximize",
+            direction="minimize",
             sampler=sampler(**sampler_kwargs),
             pruner=pruner(**pruner_kwargs),
         )
