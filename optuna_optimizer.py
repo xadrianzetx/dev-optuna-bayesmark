@@ -4,12 +4,13 @@ import optuna
 from bayesmark.abstract_optimizer import AbstractOptimizer
 from bayesmark.experiment import experiment_main
 from optuna.pruners import NopPruner
-from optuna.samplers import RandomSampler, TPESampler
+from optuna.samplers import RandomSampler, TPESampler, CmaEsSampler
 
 X = Dict[str, Union[int, float]]
 SAMPLERS = {
     "RandomSampler": RandomSampler,
     "TPESampler": TPESampler,
+    "CmaEsSampler": CmaEsSampler,
 }
 PRUNERS = {"NopPruner": NopPruner}
 
