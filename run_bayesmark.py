@@ -7,10 +7,10 @@ from typing import Any
 import bayesmark.constants as cc
 import matplotlib.pyplot as plt
 import numpy as np
-from bayesmark.constants import (ITER, METHOD, OBJECTIVE, TEST_CASE,
-                                 VISIBLE_TO_OPT)
 from bayesmark.serialize import XRSerializer
 from matplotlib import cm, colors
+from matplotlib.axes import Axes
+from xarray import Dataset
 
 
 def run(args: argparse.Namespace) -> None:
@@ -56,65 +56,52 @@ def visuals(args: argparse.Namespace) -> None:
     # https://github.com/uber/bayesmark/tree/master/notebooks
     db_root = os.path.abspath("runs")
     dbid = "bo_debug_run"
+    summary, _ = XRSerializer.load_derived(db_root, db=dbid, key=cc.PERF_RESULTS)
 
-    # FIXME correct key?
-    summary_ds, _ = XRSerializer.load_derived(db_root, db=dbid, key=cc.PERF_RESULTS)
-    method_to_rgba = build_color_dict(summary_ds.coords[METHOD].values.tolist())
-    method_list = summary_ds.coords[METHOD].values
+    fig = plt.figure(figsize=(12, 12))
+    gs = fig.add_gridspec(2, hspace=0)
+    axs = gs.subplots(sharex=True)
 
-    fig, axarr = plt.subplots(1, 2, figsize=(16, 8))
-    for func_name in summary_ds.coords[TEST_CASE].values:
-        plt.sca(axarr[0])
-        for method_name in method_list:
-            curr_ds = summary_ds.sel(
-                {TEST_CASE: func_name, METHOD: method_name, OBJECTIVE: VISIBLE_TO_OPT}
-            )
-
-            plt.fill_between(
-                curr_ds.coords[ITER].values,
-                curr_ds[cc.LB_MED].values,
-                curr_ds[cc.UB_MED].values,
-                color=method_to_rgba[method_name],
-                alpha=0.5,
-            )
-            plt.plot(
-                curr_ds.coords[ITER].values,
-                curr_ds[cc.PERF_MED].values,
-                color=method_to_rgba[method_name],
-                label=method_name,
-            )
-        plt.xlabel("evaluation", fontsize=10)
-        plt.ylabel("median score", fontsize=10)
-        plt.title(func_name)
-        plt.legend()
-
-        plt.sca(axarr[1])
-        for method_name in method_list:
-            curr_ds = summary_ds.sel(
-                {TEST_CASE: func_name, METHOD: method_name, OBJECTIVE: VISIBLE_TO_OPT}
-            )
-
-            plt.fill_between(
-                curr_ds.coords[ITER].values,
-                curr_ds[cc.LB_MEAN].values,
-                curr_ds[cc.UB_MEAN].values,
-                color=method_to_rgba[method_name],
-                alpha=0.5,
-            )
-            plt.plot(
-                curr_ds.coords[ITER].values,
-                curr_ds[cc.PERF_MEAN].values,
-                color=method_to_rgba[method_name],
-                label=method_name,
-            )
-        plt.xlabel("evaluation", fontsize=10)
-        plt.ylabel("mean score", fontsize=10)
-        plt.title(func_name)
-        plt.legend()
+    for benchmark in summary.coords["function"].values:
+        for metric, ax in zip(["mean", "median"], axs):
+            make_plot(summary, ax, benchmark, metric)
 
     dataset = args.dataset
     model = args.model
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels)
+    fig.suptitle(benchmark)
     fig.savefig(f"out/optuna-{dataset}-{model}-sumamry.png")
+
+
+def make_plot(summary: Dataset, ax: Axes, func: str, metric: str) -> None:
+
+    color = build_color_dict(summary.coords["optimizer"].values.tolist())
+    optimizers = summary.coords["optimizer"].values
+
+    for optimizer in optimizers:
+        curr_ds = summary.sel(
+            {"function": func, "optimizer": optimizer, "objective": cc.VISIBLE_TO_OPT}
+        )
+
+        ax.fill_between(
+            curr_ds.coords[cc.ITER].values,
+            curr_ds[f"{metric} LB"].values,
+            curr_ds[f"{metric} UB"].values,
+            color=color[optimizer],
+            alpha=0.5,
+        )
+        ax.plot(
+            curr_ds.coords["iter"].values,
+            curr_ds[metric].values,
+            color=color[optimizer],
+            label=optimizer,
+        )
+
+    ax.set_xlabel("Budget", fontsize=10)
+    ax.set_ylabel(f"{metric.capitalize()} score", fontsize=10)
+    ax.grid(alpha=0.2)
+    ax.label_outer()
 
 
 def build_color_dict(names: Any) -> Any:
@@ -146,7 +133,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     run(args)
-    try:
-        visuals(args)
-    except Exception as e:
-        print(f"Caught: {str(e)}")
+    visuals(args)
