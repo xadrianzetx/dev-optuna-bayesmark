@@ -13,6 +13,9 @@ from matplotlib.axes import Axes
 from xarray import Dataset
 
 
+_RUN_NAME = "bo_optuna_run"
+
+
 def run(args: argparse.Namespace) -> None:
 
     sampler_list = args.sampler_list.split()
@@ -38,16 +41,16 @@ def run(args: argparse.Namespace) -> None:
     samplers = " ".join(config.keys())
     metric = "nll" if args.dataset in ["breast", "iris", "wine", "digits"] else "mse"
     cmd = (
-        f"bayesmark-launch -n {args.budget} -r {args.repeat} -dir runs -b bo_debug_run "
+        f"bayesmark-launch -n {args.budget} -r {args.repeat} -dir runs -b {_RUN_NAME} "
         f"-o RandomSearch {samplers} "
         f"-c {args.model} -d {args.dataset} -m {metric} --opt-root . -v"
     )
     subprocess.run(cmd, shell=True)
 
-    cmd = "bayesmark-agg -dir runs -b bo_debug_run"
+    cmd = f"bayesmark-agg -dir runs -b {_RUN_NAME}"
     subprocess.run(cmd, shell=True)
 
-    cmd = "bayesmark-anal -dir runs -b bo_debug_run -v"
+    cmd = f"bayesmark-anal -dir runs -b {_RUN_NAME} -v"
     subprocess.run(cmd, shell=True)
 
 
@@ -55,8 +58,7 @@ def visuals(args: argparse.Namespace) -> None:
 
     # https://github.com/uber/bayesmark/tree/master/notebooks
     db_root = os.path.abspath("runs")
-    dbid = "bo_debug_run"
-    summary, _ = XRSerializer.load_derived(db_root, db=dbid, key=cc.PERF_RESULTS)
+    summary, _ = XRSerializer.load_derived(db_root, db=_RUN_NAME, key=cc.PERF_RESULTS)
 
     fig = plt.figure(figsize=(12, 12))
     gs = fig.add_gridspec(2, hspace=0)
