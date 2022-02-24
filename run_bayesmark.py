@@ -68,12 +68,10 @@ def visuals(args: argparse.Namespace) -> None:
         for metric, ax in zip(["mean", "median"], axs):
             make_plot(summary, ax, benchmark, metric)
 
-    dataset = args.dataset
-    model = args.model
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels)
     fig.suptitle(benchmark)
-    fig.savefig(f"out/optuna-{dataset}-{model}-sumamry.png")
+    fig.savefig(f"out/optuna-{args.dataset}-{args.model}-sumamry.png")
 
 
 def make_plot(summary: Dataset, ax: Axes, func: str, metric: str) -> None:
