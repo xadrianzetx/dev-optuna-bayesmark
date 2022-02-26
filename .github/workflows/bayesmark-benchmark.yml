@@ -49,11 +49,6 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Install gnuplot
-      run: |
-        sudo apt update
-        sudo apt -y install gnuplot
-
     - name: Install Python libralies
       run: |
         python -m pip install --upgrade pip
