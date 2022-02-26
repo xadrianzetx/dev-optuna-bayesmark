@@ -35,8 +35,10 @@ jobs:
 
     strategy:
       matrix:
-        dataset: [breast, digits, iris, wine, diabetes]
-        model: [kNN, SVM, DT, RF, MLP-sgd, ada, linear]
+        # dataset: [breast, digits, iris, wine, diabetes]
+        # model: [kNN, SVM, DT, RF, MLP-sgd, ada, linear]
+        dataset: [diabetes]
+        model: [kNN, SVM]
 
     steps:
     - name: Checkout
