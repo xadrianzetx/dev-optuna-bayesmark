@@ -37,7 +37,7 @@ jobs:
       matrix:
         # dataset: [breast, digits, iris, wine, diabetes]
         # model: [kNN, SVM, DT, RF, MLP-sgd, ada, linear]
-        dataset: [diabetes]
+        dataset: [diabetes, iris]
         model: [kNN, SVM]
 
     steps:
@@ -75,7 +75,7 @@ jobs:
     
     - uses: actions/upload-artifact@v2
       with:
-        name: visual-artifacts
+        name: benchmark-plots
         path: plots
     
     - uses: actions/upload-artifact@v2
