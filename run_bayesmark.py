@@ -12,7 +12,6 @@ from matplotlib import cm, colors
 from matplotlib.axes import Axes
 from xarray import Dataset
 
-
 _RUN_NAME = "bo_optuna_run"
 
 
@@ -115,6 +114,23 @@ def build_color_dict(names: Any) -> Any:
     return color_dict
 
 
+def partial_report(args: argparse.Namespace) -> None:
+
+    db_root = os.path.abspath("runs")
+    summary, _ = XRSerializer.load_derived(db_root, db=_RUN_NAME, key=cc.MEAN_SCORE)
+
+    # We probably should not be taking last objective value, but best.
+    scores = summary["mean"].sel({"objective": cc.VISIBLE_TO_OPT}, drop=True)[
+        {"iter": -1}
+    ]
+    leaderboard = (100 * (1 - scores)).to_series().to_dict()
+    sorted_lb = {k: v for k, v in sorted(leaderboard.items(), key=lambda item: item[1])}
+
+    filename = f"{args.dataset}-{args.model}-partial-report.json"
+    with open(os.path.join("partial", filename), "w") as file:
+        json.dump(sorted_lb, file)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="iris")
@@ -134,3 +150,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     run(args)
     visuals(args)
+    partial_report(args)
