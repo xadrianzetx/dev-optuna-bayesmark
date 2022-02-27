@@ -3,7 +3,6 @@ import os
 from collections import Counter
 from typing import Dict
 
-from typing_extensions import Self
 
 # TODO(xadrianzetx) Consider proper templating engine.
 _LINE_BREAK = "\n"
@@ -57,7 +56,9 @@ class BayesmarkReportBuilder:
         self._problems_counter = 1
         self._problems_body = ""
 
-    def add_problem(self, name: str, scores: Dict[str, float]) -> Self:
+    def add_problem(
+        self, name: str, scores: Dict[str, float]
+    ) -> "BayesmarkReportBuilder":
 
         self._problems_body += (
             f"### ({self._problems_counter}) Problem: {name}" + _LINE_BREAK
@@ -74,12 +75,12 @@ class BayesmarkReportBuilder:
 
         return self
 
-    def add_dataset(self, dataset: str) -> Self:
+    def add_dataset(self, dataset: str) -> "BayesmarkReportBuilder":
 
         self._datasets.update([dataset])
         return self
 
-    def add_model(self, model: str) -> Self:
+    def add_model(self, model: str) -> "BayesmarkReportBuilder":
 
         self._models.update([model])
         return self
