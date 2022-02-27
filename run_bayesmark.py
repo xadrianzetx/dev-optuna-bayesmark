@@ -70,7 +70,7 @@ def visuals(args: argparse.Namespace) -> None:
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels)
     fig.suptitle(benchmark)
-    fig.savefig(f"out/optuna-{args.dataset}-{args.model}-sumamry.png")
+    fig.savefig(f"plots/optuna-{args.dataset}-{args.model}-sumamry.png")
 
 
 def make_plot(summary: Dataset, ax: Axes, func: str, metric: str) -> None:
