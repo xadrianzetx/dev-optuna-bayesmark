@@ -62,8 +62,7 @@ jobs:
 
     - name: Run performance benchmark
       run: |
-        mkdir runs
-        mkdir out
+        mkdir runs plots partial
         python run_bayesmark.py \
           --dataset ${{ matrix.dataset }} \
           --model ${{ matrix.model }} \
@@ -76,7 +75,13 @@ jobs:
     
     - uses: actions/upload-artifact@v2
       with:
-        path: out
+        name: visual-artifacts
+        path: plots
+    
+    - uses: actions/upload-artifact@v2
+      with:
+        name: partial-reports
+        path: partial
 
   build-report:
     needs: benchmark
@@ -87,9 +92,19 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
-        path: out
+        name: partial-reports
+        path: partial
+    
+    - name: Run benchmark report builder
+      run: |
+        mkdir report
+        python report_bayesmark.py
     
     - uses: actions/upload-artifact@v2
       with:
         name: benchmark-report
-        path: out/artifact
+        path: report
+    
+    - uses: geekyeggo/delete-artifact@v1
+      with:
+        name: partial-reports
