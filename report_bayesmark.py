@@ -3,6 +3,8 @@ import os
 from collections import Counter
 from typing import Dict
 
+from typing_extensions import Self
+
 # TODO(xadrianzetx) Consider proper templating engine.
 _LINE_BREAK = "\n"
 _TABLE_HEADER = "|Ranking|Solver|Score|\n|---:|:---|---:|"
@@ -45,28 +47,32 @@ class BayesmarkReportBuilder:
         self._problems_counter = 1
         self._problems_body = ""
 
-    def add_problem(self, name: str, partial: Dict[str, float]) -> None:
+    def add_problem(self, name: str, scores: Dict[str, float]) -> Self:
 
         self._problems_body += (
             f"### ({self._problems_counter}) Problem: {name}" + _LINE_BREAK
         )
         self._problems_body += "".join([_LINE_BREAK, _TABLE_HEADER, _LINE_BREAK])
 
-        for idx, (solver, score) in enumerate(partial.items()):
+        for idx, (solver, score) in enumerate(scores.items()):
             row = f"|{idx + 1}|{solver}|{score:.5f}|"
             self._problems_body += "".join([row, _LINE_BREAK])
 
         self._problems_body += _LINE_BREAK
-        self._solvers.update(partial.keys())
+        self._solvers.update(scores.keys())
         self._problems_counter += 1
 
-    def add_dataset(self, dataset: str) -> None:
+        return self
+
+    def add_dataset(self, dataset: str) -> Self:
 
         self._datasets.update([dataset])
+        return self
 
-    def add_model(self, model: str) -> None:
+    def add_model(self, model: str) -> Self:
 
         self._models.update([model])
+        return self
 
     def assemble_report(self) -> str:
 
@@ -91,14 +97,16 @@ def build_report() -> None:
     report_builder = BayesmarkReportBuilder()
     for partial_name in os.listdir("partial"):
         dataset, model, *_ = partial_name.split("-")
-        report_builder.add_dataset(dataset)
-        report_builder.add_model(model)
-
         path = os.path.join("partial", partial_name)
+
         with open(path) as file:
-            partial = json.load(file)
+            scores = json.load(file)
             problem_name = f"{dataset.capitalize()}-{model}"
-            report_builder.add_problem(problem_name, partial)
+            report_builder = (
+                report_builder.add_problem(problem_name, scores)
+                .add_dataset(dataset)
+                .add_model(model)
+            )
 
     report = report_builder.assemble_report()
     with open(os.path.join("report", "benchmark-report.md"), "w") as file:
