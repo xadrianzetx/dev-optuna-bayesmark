@@ -1,10 +1,11 @@
 from typing import Dict, List, Union
 
+import numpy as np
 import optuna
 from bayesmark.abstract_optimizer import AbstractOptimizer
 from bayesmark.experiment import experiment_main
 from optuna.pruners import NopPruner
-from optuna.samplers import RandomSampler, TPESampler, CmaEsSampler
+from optuna.samplers import CmaEsSampler, RandomSampler, TPESampler
 
 X = Dict[str, Union[int, float]]
 SAMPLERS = {
@@ -42,14 +43,21 @@ class OptunaOptimizer(AbstractOptimizer):
         suggestions: X = {}
         for name, config in self.api_config.items():
             low, high = config["range"]
-            log = config["space"] == "log"  # FIXME What about logit space?
+            log = config["space"] == "log"
+
+            if config["space"] == "logit":
+                low = np.log(low / (1 - low))
+                high = np.log(high / (1 - high))
 
             if config["type"] == "real":
                 param = trial.suggest_float(name, low, high, log=log)
             else:
                 param = trial.suggest_int(name, low, high, log=log)
 
-            suggestions[name] = param
+            if config["space"] != "logit":
+                suggestions[name] = param
+            else:
+                suggestions[name] = 1 / (1 + np.exp(-param))
 
         return suggestions
 
