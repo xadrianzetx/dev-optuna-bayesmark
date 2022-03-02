@@ -65,7 +65,7 @@ def visuals(args: argparse.Namespace) -> None:
 
     for benchmark in summary.coords["function"].values:
         for metric, ax in zip(["mean", "median"], axs):
-            make_plot(summary, ax, benchmark, metric)
+            make_plot(summary, ax, benchmark, metric, args.plot_warmup)
 
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels)
@@ -73,26 +73,30 @@ def visuals(args: argparse.Namespace) -> None:
     fig.savefig(f"plots/optuna-{args.dataset}-{args.model}-sumamry.png")
 
 
-def make_plot(summary: Dataset, ax: Axes, func: str, metric: str) -> None:
+def make_plot(summary: Dataset, ax: Axes, func: str, metric: str, plot_warmup: bool) -> None:
 
     color = build_color_dict(summary.coords["optimizer"].values.tolist())
     optimizers = summary.coords["optimizer"].values
+    idx = 0 if plot_warmup else 10
 
     for optimizer in optimizers:
         curr_ds = summary.sel(
             {"function": func, "optimizer": optimizer, "objective": cc.VISIBLE_TO_OPT}
         )
 
+        if len(curr_ds.coords[cc.ITER].values) <= idx:
+            continue
+
         ax.fill_between(
-            curr_ds.coords[cc.ITER].values,
-            curr_ds[f"{metric} LB"].values,
-            curr_ds[f"{metric} UB"].values,
+            curr_ds.coords[cc.ITER].values[idx:],
+            curr_ds[f"{metric} LB"].values[idx:],
+            curr_ds[f"{metric} UB"].values[idx:],
             color=color[optimizer],
             alpha=0.5,
         )
         ax.plot(
-            curr_ds.coords["iter"].values,
-            curr_ds[metric].values,
+            curr_ds.coords["iter"].values[idx:],
+            curr_ds[metric].values[idx:],
             color=color[optimizer],
             label=optimizer,
         )
@@ -145,8 +149,10 @@ if __name__ == "__main__":
     parser.add_argument("--pruner-list", type=str, default="NopPruner")
     parser.add_argument("--pruner-kwargs-list", type=str, default="{}")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--plot-warmup", type=bool)
 
     args = parser.parse_args()
-    run(args)
-    visuals(args)
-    partial_report(args)
+    print(args.plot_warmup)
+    # run(args)
+    # visuals(args)
+    # partial_report(args)
