@@ -62,10 +62,11 @@ def visuals(args: argparse.Namespace) -> None:
     fig = plt.figure(figsize=(18, 8))
     gs = fig.add_gridspec(1, 2)
     axs = gs.subplots()
+    warmup = json.loads(args.plot_warmup)
 
     for benchmark in summary.coords["function"].values:
         for metric, ax in zip(["mean", "median"], axs):
-            make_plot(summary, ax, benchmark, metric, args.plot_warmup)
+            make_plot(summary, ax, benchmark, metric, warmup)
 
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels)
@@ -149,10 +150,9 @@ if __name__ == "__main__":
     parser.add_argument("--pruner-list", type=str, default="NopPruner")
     parser.add_argument("--pruner-kwargs-list", type=str, default="{}")
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--plot-warmup", type=bool)
+    parser.add_argument("--plot-warmup", type=str)
 
     args = parser.parse_args()
-    print(args.plot_warmup)
-    # run(args)
-    # visuals(args)
-    # partial_report(args)
+    run(args)
+    visuals(args)
+    partial_report(args)
