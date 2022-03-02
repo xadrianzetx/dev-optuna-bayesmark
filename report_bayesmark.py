@@ -1,5 +1,6 @@
 import json
 import os
+import io
 from collections import Counter
 from typing import Dict
 
@@ -16,22 +17,23 @@ class BayesmarkReportBuilder:
         self._datasets = Counter()
         self._models = Counter()
         self._problems_counter = 1
-        self._problems_body = ""
+        self._problems_body = io.StringIO()
 
     def add_problem(
         self, name: str, scores: Dict[str, float]
     ) -> "BayesmarkReportBuilder":
 
-        self._problems_body += (
-            f"### ({self._problems_counter}) Problem: {name}" + _LINE_BREAK
-        )
-        self._problems_body += "".join([_LINE_BREAK, _TABLE_HEADER, _LINE_BREAK])
+        if self._problems_body.closed:
+            self._problems_body = io.StringIO()
+
+        problem_header = f"### ({self._problems_counter}) Problem: {name}" + _LINE_BREAK
+        self._problems_body.write(problem_header)
+        self._problems_body.write("".join([_LINE_BREAK, _TABLE_HEADER, _LINE_BREAK]))
 
         for idx, (solver, score) in enumerate(scores.items()):
             row = f"|{idx + 1}|{solver}|{score:.5f}|"
-            self._problems_body += "".join([row, _LINE_BREAK])
+            self._problems_body.write("".join([row, _LINE_BREAK]))
 
-        self._problems_body += _LINE_BREAK
         self._solvers.update(scores.keys())
         self._problems_counter += 1
 
@@ -60,9 +62,10 @@ class BayesmarkReportBuilder:
             num_datasets=num_datasets,
             num_models=num_models,
             num_problems=num_datasets * num_models,
-            leaderboards=self._problems_body,
+            leaderboards=self._problems_body.getvalue(),
         )
 
+        self._problems_body.close()
         return report
 
 
