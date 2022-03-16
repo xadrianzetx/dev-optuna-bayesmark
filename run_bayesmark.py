@@ -41,7 +41,7 @@ def run(args: argparse.Namespace) -> None:
     metric = "nll" if args.dataset in ["breast", "iris", "wine", "digits"] else "mse"
     cmd = (
         f"bayesmark-launch -n {args.budget} -r {args.repeat} -dir runs -b {_RUN_NAME} "
-        f"-o RandomSearch {samplers} "
+        f"-o {samplers} "
         f"-c {args.model} -d {args.dataset} -m {metric} --opt-root . -v"
     )
     subprocess.run(cmd, shell=True)
