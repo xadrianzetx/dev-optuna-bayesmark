@@ -86,55 +86,66 @@ def partial_report(args: argparse.Namespace) -> None:
 
 def visuals(args: argparse.Namespace) -> None:
 
-    # https://github.com/uber/bayesmark/tree/master/notebooks
-    db_root = os.path.abspath("runs")
-    summary, _ = XRSerializer.load_derived(db_root, db=_RUN_NAME, key=cc.PERF_RESULTS)
+    filename = f"{args.dataset}-{args.model}-partial-report.json"
+    df = pd.read_json(os.path.join("partial", filename))
+    stats = (
+        df.groupby(["opt", "iter"])
+        .generalization.agg(["mean", "std"])
+        # FIXME Better naming for those cols.
+        .rename(columns={"mean": "best_mean", "std": "best_std"})
+        .reset_index()
+    )
 
-    fig = plt.figure(figsize=(18, 8))
-    gs = fig.add_gridspec(1, 2)
-    axs = gs.subplots()
+    fig, ax = plt.subplots()
+    fig.set_size_inches(12, 8)
     warmup = json.loads(args.plot_warmup)
+    metric = df.metric[0]
+    color_lookup = build_color_dict(df["opt"].unique())
 
-    for benchmark in summary.coords["function"].values:
-        for metric, ax in zip(["mean", "median"], axs):
-            make_plot(summary, ax, benchmark, metric, warmup)
+    for optimizer, summary in stats.groupby("opt"):
+        color = color_lookup[optimizer]
+        make_plot(summary, ax, optimizer, metric, warmup, color)
 
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels)
-    fig.suptitle(benchmark)
+    fig.suptitle(f"{args.dataset}-{args.model}")
     fig.savefig(f"plots/optuna-{args.dataset}-{args.model}-sumamry.png")
 
 
-def make_plot(summary: Dataset, ax: Axes, func: str, metric: str, plot_warmup: bool) -> None:
+def make_plot(
+    summary: pd.DataFrame,
+    ax: Axes,
+    optimizer: str,
+    metric: str,
+    plot_warmup: bool,
+    color: np.ndarray,
+) -> None:
 
-    color = build_color_dict(summary.coords["optimizer"].values.tolist())
-    optimizers = summary.coords["optimizer"].values
     idx = 0 if plot_warmup else 10
+    argpos = summary.best_mean.expanding().apply(np.argmin).astype(int)
+    best_found = summary.best_mean.values[argpos.values]
+    sdev = summary.best_std.values[argpos.values]
 
-    for optimizer in optimizers:
-        curr_ds = summary.sel(
-            {"function": func, "optimizer": optimizer, "objective": cc.VISIBLE_TO_OPT}
-        )
+    if len(best_found) <= idx:
+        return
 
-        if len(curr_ds.coords[cc.ITER].values) <= idx:
-            continue
+    ax.fill_between(
+        np.arange(len(best_found))[idx:],
+        (best_found - sdev)[idx:],
+        (best_found + sdev)[idx:],
+        color=color,
+        alpha=0.5,
+    )
 
-        ax.fill_between(
-            curr_ds.coords[cc.ITER].values[idx:],
-            curr_ds[f"{metric} LB"].values[idx:],
-            curr_ds[f"{metric} UB"].values[idx:],
-            color=color[optimizer],
-            alpha=0.5,
-        )
-        ax.plot(
-            curr_ds.coords["iter"].values[idx:],
-            curr_ds[metric].values[idx:],
-            color=color[optimizer],
-            label=optimizer,
-        )
+    ax.plot(
+        np.arange(len(best_found))[idx:],
+        best_found[idx:],
+        color=color,
+        label=optimizer,
+    )
 
     ax.set_xlabel("Budget", fontsize=10)
-    ax.set_ylabel(f"{metric.capitalize()} score", fontsize=10)
+    ax.set_ylabel(f"Validation {metric.upper()}", fontsize=10)
     ax.grid(alpha=0.2)
 
 
