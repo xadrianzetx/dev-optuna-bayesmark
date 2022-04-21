@@ -4,13 +4,12 @@ import os
 import subprocess
 from typing import Any
 
-import bayesmark.constants as cc
 import matplotlib.pyplot as plt
 import numpy as np
-from bayesmark.serialize import XRSerializer
+import pandas as pd
+import xarray
 from matplotlib import cm, colors
 from matplotlib.axes import Axes
-from xarray import Dataset
 
 _RUN_NAME = "bo_optuna_run"
 
@@ -49,8 +48,42 @@ def run(args: argparse.Namespace) -> None:
     cmd = f"bayesmark-agg -dir runs -b {_RUN_NAME}"
     subprocess.run(cmd, shell=True)
 
-    cmd = f"bayesmark-anal -dir runs -b {_RUN_NAME} -v"
-    subprocess.run(cmd, shell=True)
+def partial_report(args: argparse.Namespace) -> None:
+
+    eval_path = os.path.join("runs", _RUN_NAME, "eval")
+    time_path = os.path.join("runs", _RUN_NAME, "time")
+    studies = os.listdir(eval_path)
+    summaries = []
+
+    for study in studies:
+        buff = []
+        for rundata in [eval_path, time_path]:
+            with open(os.path.join(rundata, study), "r") as file:
+                data = json.load(file)
+                df = (
+                    xarray.Dataset.from_dict(data["data"])
+                    .to_dataframe()
+                    .droplevel("suggestion")
+                )
+
+            for k, v in data["meta"]["args"].items():
+                colname = k[2:] if k.startswith("--") else k
+                df[colname] = v
+
+            buff.append(df)
+
+        # FIXME No need to append meta cols twice.
+        df = pd.merge(*buff, left_index=True, right_index=True, suffixes=("", "_drop"))
+        to_drop = [col for col in df.columns if col.endswith("_drop")]
+        df = df.drop(to_drop, axis=1).reset_index()
+        summaries.append(df)
+
+    filename = f"{args.dataset}-{args.model}-partial-report.json"
+    (
+        pd.concat(summaries)
+        .reset_index(drop=True)
+        .to_json(os.path.join("partial", filename))
+    )
 
 
 def visuals(args: argparse.Namespace) -> None:
@@ -118,23 +151,6 @@ def build_color_dict(names: Any) -> Any:
     return color_dict
 
 
-def partial_report(args: argparse.Namespace) -> None:
-
-    db_root = os.path.abspath("runs")
-    summary, _ = XRSerializer.load_derived(db_root, db=_RUN_NAME, key=cc.MEAN_SCORE)
-
-    # We probably should not be taking last objective value, but best.
-    scores = summary["mean"].sel({"objective": cc.VISIBLE_TO_OPT}, drop=True)[
-        {"iter": -1}
-    ]
-    leaderboard = (100 * (1 - scores)).to_series().to_dict()
-    sorted_lb = {k: v for k, v in sorted(leaderboard.items(), key=lambda item: item[1])}
-
-    filename = f"{args.dataset}-{args.model}-partial-report.json"
-    with open(os.path.join("partial", filename), "w") as file:
-        json.dump(sorted_lb, file)
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="iris")
@@ -154,5 +170,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     run(args)
-    visuals(args)
     partial_report(args)
+    visuals(args)
