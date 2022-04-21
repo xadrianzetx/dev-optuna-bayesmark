@@ -91,6 +91,7 @@ jobs:
   build-report:
     needs: benchmark
     runs-on: ubuntu-latest
+    if: false
 
     steps:
     - uses: actions/checkout@master
