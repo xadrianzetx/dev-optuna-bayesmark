@@ -45,8 +45,6 @@ def run(args: argparse.Namespace) -> None:
     )
     subprocess.run(cmd, shell=True)
 
-    cmd = f"bayesmark-agg -dir runs -b {_RUN_NAME}"
-    subprocess.run(cmd, shell=True)
 
 def partial_report(args: argparse.Namespace) -> None:
 
