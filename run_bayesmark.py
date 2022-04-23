@@ -134,7 +134,8 @@ def make_plot(
         (best_found - sdev)[idx:],
         (best_found + sdev)[idx:],
         color=color,
-        alpha=0.5,
+        alpha=0.25,
+        step="mid"
     )
 
     ax.plot(
@@ -142,6 +143,7 @@ def make_plot(
         best_found[idx:],
         color=color,
         label=optimizer,
+        drawstyle="steps-mid"
     )
 
     ax.set_xlabel("Budget", fontsize=10)
