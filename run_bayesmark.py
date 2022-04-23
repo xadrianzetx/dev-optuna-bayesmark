@@ -24,7 +24,7 @@ def run(args: argparse.Namespace) -> None:
     config = {}
     for sampler, sampler_kwargs in zip(sampler_list, sampler_kwargs_list):
         for pruner, pruner_kwargs in zip(pruner_list, pruner_kwargs_list):
-            optimizer_name = f"{sampler}-{pruner}-Optuna"
+            optimizer_name = f"{sampler}-{pruner}"
             optimizer_kwargs = {
                 "sampler": sampler,
                 "sampler_kwargs": json.loads(sampler_kwargs),
@@ -108,7 +108,7 @@ def visuals(args: argparse.Namespace) -> None:
 
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels)
-    fig.suptitle(f"{args.dataset}-{args.model}")
+    fig.suptitle(f"Bayesmark-{args.dataset.capitalize()}-{args.model}")
     fig.savefig(f"plots/optuna-{args.dataset}-{args.model}-sumamry.png")
 
 

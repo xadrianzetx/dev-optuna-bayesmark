@@ -1,5 +1,5 @@
 {
-    "RandomSampler-NopPruner-Optuna": [
+    "RandomSampler-NopPruner": [
         "optuna_optimizer.py",
         {
             "sampler": "RandomSampler",
@@ -8,7 +8,7 @@
             "pruner_kwargs": {}
         }
     ],
-    "TPESampler-NopPruner-Optuna": [
+    "TPESampler-NopPruner": [
         "optuna_optimizer.py",
         {
             "sampler": "TPESampler",
