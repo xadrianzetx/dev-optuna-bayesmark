@@ -1,9 +1,11 @@
-import json
-import os
 import io
-from collections import Counter
-from typing import Dict
+import os
+from abc import ABC
+from collections import defaultdict
+from typing import Dict, List, Tuple
 
+import numpy as np
+import pandas as pd
 
 _LINE_BREAK = "\n"
 
@@ -38,6 +40,39 @@ class ElapsedMetric(BaseMetric):
 
     def calculate(self, data: pd.DataFrame) -> Moments:
         return super().calculate(data)
+
+
+class PartialReport:
+    def __init__(self, data: pd.DataFrame, metrics: List[BaseMetric]) -> None:
+        self._data = data
+        self._metrics = metrics
+        # TODO This class should also be able to provide report
+        # metadate for recipes and stuff.
+
+    @classmethod
+    def from_json(cls, path: str, metrics: List[BaseMetric]) -> "PartialReport":
+
+        data = pd.read_json(path)
+        return cls(data, metrics)
+
+    def add_metric(self, metric: BaseMetric) -> None:
+
+        self._metrics.extend(metric)
+
+    def summarize_solver(self, solver: str, metric: BaseMetric) -> Moments:
+
+        solver_data = self._data[self._data.opt == solver]
+        if solver_data.shape[0] == 0:
+            raise ValueError(f"{solver} not found in report.")
+        return metric.calculate(solver_data)
+
+    def average_performance(self, metric: BaseMetric) -> Dict[str, float]:
+
+        performance: Dict[str, float] = {}
+        for solver, data in self._data.groupby("opt"):
+            mean, _ = metric.calculate(data)
+            performance[solver] = mean
+        return performance
 
 
 # TODO(xadrianzetx) Consider proper templating engine.
