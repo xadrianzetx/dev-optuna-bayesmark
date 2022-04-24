@@ -6,7 +6,38 @@ from typing import Dict
 
 
 _LINE_BREAK = "\n"
-_TABLE_HEADER = "|Ranking|Solver|Score|\n|---:|:---|---:|"
+
+Moments = Tuple[float, float]
+
+
+class BaseMetric(ABC):
+    @property
+    def name(self) -> str:
+        ...
+
+    def calculate(self, data: pd.DataFrame) -> Moments:
+        ...
+
+
+class BestValueMetric(BaseMetric):
+    name = "Best value"
+
+    def calculate(self, data: pd.DataFrame) -> Moments:
+        return super().calculate(data)
+
+
+class AUCMetric(BaseMetric):
+    name = "AUC"
+
+    def calculate(self, data: pd.DataFrame) -> Moments:
+        return super().calculate(data)
+
+
+class ElapsedMetric(BaseMetric):
+    name = "Elapsed"
+
+    def calculate(self, data: pd.DataFrame) -> Moments:
+        return super().calculate(data)
 
 
 # TODO(xadrianzetx) Consider proper templating engine.
