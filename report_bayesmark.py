@@ -17,7 +17,7 @@ class BaseMetric(ABC):
     def name(self) -> str:
         ...
 
-    def calculate(self, data: pd.DataFrame) -> Moments:
+    def calculate(self, data: pd.DataFrame) -> List[float]:
         ...
 
 
@@ -31,14 +31,14 @@ class BestValueMetric(BaseMetric):
 class AUCMetric(BaseMetric):
     name = "AUC"
 
-    def calculate(self, data: pd.DataFrame) -> Moments:
+    def calculate(self, data: pd.DataFrame) -> List[float]:
         return super().calculate(data)
 
 
 class ElapsedMetric(BaseMetric):
     name = "Elapsed"
 
-    def calculate(self, data: pd.DataFrame) -> Moments:
+    def calculate(self, data: pd.DataFrame) -> List[float]:
         return super().calculate(data)
 
 
