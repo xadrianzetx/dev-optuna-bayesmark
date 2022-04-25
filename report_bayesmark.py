@@ -51,6 +51,11 @@ class PartialReport:
         # TODO This class should also be able to provide report
         # metadate for recipes and stuff.
 
+    @property
+    def optimizers(self) -> List[str]:
+
+        return list(self._data.opt.unique())
+
     @classmethod
     def from_json(cls, path: str, metrics: List[BaseMetric]) -> "PartialReport":
 
@@ -115,7 +120,7 @@ class DewanckerRanker:
             if no_ties:
                 break
 
-        wins = {optimzier: wins[optimzier] for optimzier in summaries}
+        wins = {optimzier: wins[optimzier] for optimzier in report.optimizers}
         sorted_wins = {k: v for k, v in sorted(wins.items(), key=lambda x: x[1])}
         self._ranking = list(reversed(sorted_wins.keys()))
 
