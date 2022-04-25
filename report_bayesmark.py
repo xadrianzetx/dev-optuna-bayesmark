@@ -1,4 +1,5 @@
 import io
+import itertools
 import os
 from abc import ABC
 from collections import defaultdict
@@ -6,6 +7,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
+from scipy.stats import mannwhitneyu
 
 _LINE_BREAK = "\n"
 
@@ -75,6 +77,57 @@ class PartialReport:
             run_metrics = metric.calculate(data)
             performance[solver] = run_metrics
         return performance
+
+
+class DewanckerRanker:
+    def __init__(self, metrics: List[BaseMetric]) -> None:
+        self._metrics = metrics
+        self._ranking = None
+        self._borda = None
+
+    @property
+    def solvers(self) -> List[str]:
+
+        if self._ranking is None:
+            raise ValueError("Call rank first.")
+        return self._ranking
+
+    @property
+    def borda(self) -> np.ndarray:
+
+        if self._borda is None:
+            raise ValueError("Call rank first.")
+        return self._borda
+
+    def rank(self, report: PartialReport) -> None:
+
+        wins = defaultdict(int)
+        for metric in self._metrics:
+            summaries = report.average_performance(metric)
+            for a, b in itertools.permutations(summaries.keys(), 2):
+                _, p_val = mannwhitneyu(summaries[a], summaries[b], alternative="less")
+                # FIXME alpha should be determined by num optimizers - see section 2.1
+                if p_val < 0.05:
+                    wins[a] += 1
+
+            all_wins = [wins[optimizer] for optimizer in summaries]
+            no_ties = len(all_wins) == len(np.unique(all_wins))
+            if no_ties:
+                break
+
+        wins = {optimzier: wins[optimzier] for optimzier in summaries}
+        sorted_wins = {k: v for k, v in sorted(wins.items(), key=lambda x: x[1])}
+        self._ranking = list(reversed(sorted_wins.keys()))
+
+        prev_wins = -1
+        borda: List[int] = []
+        for points, num_wins in enumerate(sorted_wins.values()):
+            if num_wins == prev_wins:
+                borda.append(borda[-1])
+            else:
+                borda.append(points)
+            prev_wins = num_wins
+        self._borda = np.array(borda)[::-1]
 
 
 # TODO(xadrianzetx) Consider proper templating engine.
