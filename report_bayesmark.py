@@ -106,6 +106,8 @@ class DewanckerRanker:
 
     def rank(self, report: PartialReport) -> None:
 
+        # Implements https://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
+        # Section 2.1.1
         wins = defaultdict(int)
         for metric in self._metrics:
             summaries = report.average_performance(metric)
@@ -124,6 +126,7 @@ class DewanckerRanker:
         sorted_wins = {k: v for k, v in sorted(wins.items(), key=lambda x: x[1])}
         self._ranking = list(reversed(sorted_wins.keys()))
 
+        # TODO(xadrianzetx) Maybe try vectorize.
         prev_wins = -1
         borda: List[int] = []
         for points, num_wins in enumerate(sorted_wins.values()):
