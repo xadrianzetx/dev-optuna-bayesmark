@@ -64,14 +64,16 @@ class PartialReport:
         solver_data = self._data[self._data.opt == solver]
         if solver_data.shape[0] == 0:
             raise ValueError(f"{solver} not found in report.")
-        return metric.calculate(solver_data)
+
+        run_metrics = metric.calculate(solver_data)
+        return np.mean(run_metrics), np.var(run_metrics)
 
     def average_performance(self, metric: BaseMetric) -> Dict[str, float]:
 
         performance: Dict[str, float] = {}
         for solver, data in self._data.groupby("opt"):
-            mean, _ = metric.calculate(data)
-            performance[solver] = mean
+            run_metrics = metric.calculate(data)
+            performance[solver] = run_metrics
         return performance
 
 
