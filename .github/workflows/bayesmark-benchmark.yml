@@ -61,8 +61,7 @@ jobs:
         pip install --progress-bar off -U --pre optuna
         python -c 'import optuna'
         optuna --version
-        pip install --progress-bar off bayesmark
-        pip install --progress-bar off matplotlib
+        pip install --progress-bar off bayesmark matplotlib pandas scipy
 
     - name: Run performance benchmark
       run: |
