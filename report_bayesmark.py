@@ -153,6 +153,10 @@ class BayesmarkReportBuilder:
         self._problems_counter = 1
         self._problems_body = io.StringIO()
 
+    def set_precedence(self, metrics: List[BaseMetric]) -> None:
+
+        self._metric_precedence = " -> ".join([m.name for m in metrics])
+
     def add_problem(
         self,
         name: str,
@@ -216,6 +220,7 @@ class BayesmarkReportBuilder:
             num_solvers=len(self._solvers),
             num_datasets=num_datasets,
             num_models=num_models,
+            precedence=self._metric_precedence,
             num_problems=num_datasets * num_models,
             leaderboards=self._problems_body.getvalue(),
         )

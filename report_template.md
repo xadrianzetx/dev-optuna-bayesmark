@@ -4,8 +4,11 @@
 * Number of Models: {num_models}
 * Number of Datasets: {num_datasets}
 * Number of Problems: {num_problems}
+* Metrics Precedence: `{precedence}`
 
-Final score for each problem is calculated as `100 x (1-loss)`. Solver with lowest score in each problem wins. For more details visit [bayesmark docs.](https://bayesmark.readthedocs.io/en/stable/scoring.html)
+Please refer to ["A Strategy for Ranking Optimizers using Multiple Criteria"][Dewancker, Ian, et al., 2016] for the ranking strategy used in this report.
+
+[Dewancker, Ian, et al., 2016]: http://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
 
 ## Table of Contents
 
