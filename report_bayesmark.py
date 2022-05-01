@@ -10,6 +10,8 @@ import pandas as pd
 from scipy.stats import mannwhitneyu
 
 _LINE_BREAK = "\n"
+_TABLE_HEADER = "|Ranking|Solver|"
+_HEADER_FORMAT = "|:---|---:|"
 
 Moments = Tuple[float, float]
 
@@ -152,7 +154,11 @@ class BayesmarkReportBuilder:
         self._problems_body = io.StringIO()
 
     def add_problem(
-        self, name: str, scores: Dict[str, float]
+        self,
+        name: str,
+        report: PartialReport,
+        ranking: DewanckerRanker,
+        metrics: List[BaseMetric],
     ) -> "BayesmarkReportBuilder":
 
         if self._problems_body.closed:
@@ -160,14 +166,29 @@ class BayesmarkReportBuilder:
 
         problem_header = f"### ({self._problems_counter}) Problem: {name}" + _LINE_BREAK
         self._problems_body.write(problem_header)
-        self._problems_body.write("".join([_LINE_BREAK, _TABLE_HEADER, _LINE_BREAK]))
+        metric_names = [f"{m.name} (avg +- std) |" for m in metrics]
+        self._problems_body.write(
+            "".join([_LINE_BREAK, _TABLE_HEADER, *metric_names, _LINE_BREAK])
+        )
+        metric_format = ["---:|" for _ in range(len(metrics))]
+        self._problems_body.write(
+            "".join([_HEADER_FORMAT, *metric_format, _LINE_BREAK])
+        )
 
-        for idx, (solver, score) in enumerate(scores.items()):
-            row = f"|{idx + 1}|{solver}|{score:.5f}|"
-            self._problems_body.write("".join([row, _LINE_BREAK]))
+        positions = np.abs(ranking.borda - (max(ranking.borda) + 1))
+        for pos, solver in zip(positions, ranking.solvers):
+            self._solvers.add(solver)
+            row_buffer = io.StringIO()
+            row_buffer.write(f"|{pos}|{solver}|")
+            for metric in metrics:
+                mean, variance = report.summarize_solver(solver, metric)
+                row_buffer.write(f"{mean:.5f} +- {np.sqrt(variance):.5f}|")
 
-        self._solvers.update(scores.keys())
+            self._problems_body.write("".join([row_buffer.getvalue(), _LINE_BREAK]))
+            row_buffer.close()
+
         self._problems_counter += 1
+        return self
 
         return self
 
