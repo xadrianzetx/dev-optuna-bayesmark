@@ -142,9 +142,12 @@ class DewanckerRanker:
 class BayesmarkReportBuilder:
     def __init__(self) -> None:
 
-        self._solvers = Counter()
-        self._datasets = Counter()
-        self._models = Counter()
+        self._solvers = set()
+        self._datasets = set()
+        self._models = set()
+        self._firsts = defaultdict(int)
+        self._borda = defaultdict(int)
+        self._metric_precedence = str()
         self._problems_counter = 1
         self._problems_body = io.StringIO()
 
@@ -170,12 +173,14 @@ class BayesmarkReportBuilder:
 
     def add_dataset(self, dataset: str) -> "BayesmarkReportBuilder":
 
-        self._datasets.update([dataset])
+        # TODO(xadrianzetx) Should update studies section.
+        self._datasets.add(dataset)
         return self
 
     def add_model(self, model: str) -> "BayesmarkReportBuilder":
 
-        self._models.update([model])
+        # TODO(xadrianzetx) Should update recipe section.
+        self._models.add(model)
         return self
 
     def assemble_report(self) -> str:
