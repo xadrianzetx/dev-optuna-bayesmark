@@ -12,9 +12,14 @@ Please refer to ["A Strategy for Ranking Optimizers using Multiple Criteria"][De
 
 ## Table of Contents
 
-1. [Problem Leaderboards](#problem-leaderboards)
-2. [Datasets](#datasets)
-3. [Models](#models)
+1. [Overall Results](#overall-results)
+2. [Problem Leaderboards](#problem-leaderboards)
+3. [Datasets](#datasets)
+4. [Models](#models)
+
+## Overall Results
+
+{overall}
 
 ## Problem Leaderboards
 

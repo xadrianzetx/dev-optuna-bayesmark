@@ -12,6 +12,7 @@ from scipy.stats import mannwhitneyu
 _LINE_BREAK = "\n"
 _TABLE_HEADER = "|Ranking|Solver|"
 _HEADER_FORMAT = "|:---|---:|"
+_OVERALL_HEADER = "|Solver|Borda|Firsts|\n|:---|---:|---:|\n"
 
 Moments = Tuple[float, float]
 
@@ -194,6 +195,13 @@ class BayesmarkReportBuilder:
         self._problems_counter += 1
         return self
 
+    def update_leaderboard(self, ranking: DewanckerRanker) -> "BayesmarkReportBuilder":
+
+        for solver, borda in zip(ranking.solvers, ranking.borda):
+            # TODO(xadrianzetx) Implement iterator protocol for ranker.
+            if borda == max(ranking.borda):
+                self._firsts[solver] += 1
+            self._borda[solver] += borda
         return self
 
     def add_dataset(self, dataset: str) -> "BayesmarkReportBuilder":
@@ -213,6 +221,12 @@ class BayesmarkReportBuilder:
         num_datasets = len(self._datasets)
         num_models = len(self._models)
 
+        overall_body = io.StringIO()
+        overall_body.write(_OVERALL_HEADER)
+        for solver in self._solvers:
+            row = f"|{solver}|{self._borda[solver]}|{self._firsts[solver]}|"
+            overall_body.write("".join([row, _LINE_BREAK]))
+
         with open("report_template.md") as file:
             report_template = file.read()
 
@@ -222,9 +236,11 @@ class BayesmarkReportBuilder:
             num_models=num_models,
             precedence=self._metric_precedence,
             num_problems=num_datasets * num_models,
+            overall=overall_body.getvalue(),
             leaderboards=self._problems_body.getvalue(),
         )
 
+        overall_body.close()
         self._problems_body.close()
         return report
 
