@@ -68,7 +68,7 @@ class PartialReport:
 
     def add_metric(self, metric: BaseMetric) -> None:
 
-        self._metrics.extend(metric)
+        self._metrics.append(metric)
 
     def summarize_solver(self, solver: str, metric: BaseMetric) -> Moments:
 
