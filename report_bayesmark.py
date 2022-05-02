@@ -252,19 +252,32 @@ class BayesmarkReportBuilder:
 
 def build_report() -> None:
 
+    # Order of this list sets precedence.
+    # Elapsed time is caluclated but not used as a voting metric.
+    # Ref: https://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
+    metrics = [BestValueMetric(), BestValueMetric()]  # FIXME Add AUC.
     report_builder = BayesmarkReportBuilder()
+    report_builder.set_precedence(metrics)
+
     for partial_name in os.listdir("partial"):
         dataset, model, *_ = partial_name.split("-")
+        problem_name = f"{dataset.capitalize()}-{model}"
         path = os.path.join("partial", partial_name)
 
-        with open(path) as file:
-            scores = json.load(file)
-            problem_name = f"{dataset.capitalize()}-{model}"
-            report_builder = (
-                report_builder.add_problem(problem_name, scores)
-                .add_dataset(dataset)
-                .add_model(model)
-            )
+        partial = PartialReport.from_json(path, metrics)
+        ranking = DewanckerRanker(metrics)
+        ranking.rank(partial)
+
+        elapsed = ElapsedMetric()
+        all_metrics = [*metrics, elapsed]
+        partial.add_metric(elapsed)
+
+        report_builder = (
+            report_builder.add_problem(problem_name, partial, ranking, all_metrics)
+            .add_dataset(dataset)
+            .add_model(model)
+            .update_leaderboard(ranking)
+        )
 
     report = report_builder.assemble_report()
     with open(os.path.join("report", "benchmark-report.md"), "w") as file:
