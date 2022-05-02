@@ -29,8 +29,9 @@ class BaseMetric(ABC):
 class BestValueMetric(BaseMetric):
     name = "Best value"
 
-    def calculate(self, data: pd.DataFrame) -> Moments:
-        return super().calculate(data)
+    def calculate(self, data: pd.DataFrame) -> List[float]:
+
+        return data.groupby("uuid").generalization.min().values
 
 
 class AUCMetric(BaseMetric):
