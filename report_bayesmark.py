@@ -45,7 +45,11 @@ class ElapsedMetric(BaseMetric):
     name = "Elapsed"
 
     def calculate(self, data: pd.DataFrame) -> List[float]:
-        return super().calculate(data)
+
+        # Total time does not include evaluation of bayesmark
+        # objective function (no Optuna APIs are called there).
+        time_cols = ["suggest", "observe"]
+        return data.groupby("uuid")[time_cols].sum().sum(axis=1).values
 
 
 class PartialReport:
