@@ -38,7 +38,12 @@ class AUCMetric(BaseMetric):
     name = "AUC"
 
     def calculate(self, data: pd.DataFrame) -> List[float]:
-        return super().calculate(data)
+
+        aucs: List[float] = list()
+        for _, grp in data.groupby("uuid"):
+            auc = np.sum(grp.generalization.cummin() - grp.generalization.min())
+            aucs.append(auc / grp.shape[0])
+        return aucs
 
 
 class ElapsedMetric(BaseMetric):
@@ -255,7 +260,7 @@ def build_report() -> None:
     # Order of this list sets precedence.
     # Elapsed time is caluclated but not used as a voting metric.
     # Ref: https://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
-    metrics = [BestValueMetric(), BestValueMetric()]  # FIXME Add AUC.
+    metrics = [BestValueMetric(), AUCMetric()]
     report_builder = BayesmarkReportBuilder()
     report_builder.set_precedence(metrics)
 
