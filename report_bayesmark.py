@@ -257,8 +257,9 @@ class BayesmarkReportBuilder:
 
 def build_report() -> None:
 
-    # Order of this list sets precedence.
-    # Elapsed time is caluclated but not used as a voting metric.
+    # Order of this list sets metric precedence.
+    # Elapsed time is not used as a voting metric, but shown in report
+    # so it gets added to metric pool *after* ranking was calculated.
     # Ref: https://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
     metrics = [BestValueMetric(), AUCMetric()]
     report_builder = BayesmarkReportBuilder()
