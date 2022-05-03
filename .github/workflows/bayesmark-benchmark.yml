@@ -28,7 +28,7 @@ on:
         required: false
         default: '3'
       plot-warmup:
-        description: 'Omit warm-up steps when plotting results'
+        description: 'Include warm-up steps when plotting results'
         type: boolean
         default: false
 
