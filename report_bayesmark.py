@@ -60,7 +60,6 @@ class ElapsedMetric(BaseMetric):
 class PartialReport:
     def __init__(self, data: pd.DataFrame, metrics: List[BaseMetric]) -> None:
         self._data = data
-        self._metrics = metrics
         # TODO This class should also be able to provide report
         # metadate for recipes and stuff.
 
@@ -74,10 +73,6 @@ class PartialReport:
 
         data = pd.read_json(path)
         return cls(data, metrics)
-
-    def add_metric(self, metric: BaseMetric) -> None:
-
-        self._metrics.append(metric)
 
     def summarize_solver(self, solver: str, metric: BaseMetric) -> Moments:
 
@@ -276,7 +271,6 @@ def build_report() -> None:
 
         elapsed = ElapsedMetric()
         all_metrics = [*metrics, elapsed]
-        partial.add_metric(elapsed)
 
         report_builder = (
             report_builder.add_problem(problem_name, partial, ranking, all_metrics)
