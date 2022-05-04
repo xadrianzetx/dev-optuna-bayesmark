@@ -123,7 +123,7 @@ class DewanckerRanker:
         for cand in candidates:
             if 1 - np.power((1 - cand), binom(num_optimizers, 2)) < 0.05:
                 return cand
-        return 1e-5
+        return candidates[-1]
 
     def rank(self, report: PartialReport) -> None:
 
