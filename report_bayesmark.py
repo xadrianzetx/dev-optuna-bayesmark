@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
+from scipy.special import binom
 from scipy.stats import mannwhitneyu
 
 _LINE_BREAK = "\n"
@@ -112,17 +113,29 @@ class DewanckerRanker:
             raise ValueError("Call rank first.")
         return self._borda
 
+    @staticmethod
+    def pick_alpha(report: PartialReport) -> float:
+
+        # Ref: https://github.com/optuna/kurobako/blob/788dd4cf618965a4a5158aa4e13607a5803dea9d/src/report.rs#L412-L424
+        num_optimizers = len(report.optimizers)
+        candidates = [0.075, 0.05, 0.025, 0.01] * 4 / np.repeat([1, 10, 100, 1000], 4)
+
+        for cand in candidates:
+            if 1 - np.power((1 - cand), binom(num_optimizers, 2)) < 0.05:
+                return cand
+        return 1e-5
+
     def rank(self, report: PartialReport) -> None:
 
         # Implements https://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
         # Section 2.1.1
         wins = defaultdict(int)
+        alpha = DewanckerRanker.pick_alpha(report)
         for metric in self._metrics:
             summaries = report.average_performance(metric)
             for a, b in itertools.permutations(summaries.keys(), 2):
                 _, p_val = mannwhitneyu(summaries[a], summaries[b], alternative="less")
-                # FIXME alpha should be determined by num optimizers - see section 2.1
-                if p_val < 0.05:
+                if p_val < alpha:
                     wins[a] += 1
 
             all_wins = [wins[optimizer] for optimizer in summaries]
