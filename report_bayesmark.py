@@ -3,7 +3,7 @@ import itertools
 import os
 from abc import ABC
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, Generator, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -98,6 +98,10 @@ class DewanckerRanker:
         self._metrics = metrics
         self._ranking = None
         self._borda = None
+
+    def __iter__(self) -> Generator[Tuple[str, int], None, None]:
+
+        yield from zip(self.solvers, self.borda)
 
     @property
     def solvers(self) -> List[str]:
@@ -215,8 +219,7 @@ class BayesmarkReportBuilder:
 
     def update_leaderboard(self, ranking: DewanckerRanker) -> "BayesmarkReportBuilder":
 
-        for solver, borda in zip(ranking.solvers, ranking.borda):
-            # TODO(xadrianzetx) Implement iterator protocol for ranker.
+        for solver, borda in ranking:
             if borda == max(ranking.borda):
                 self._firsts[solver] += 1
             self._borda[solver] += borda
