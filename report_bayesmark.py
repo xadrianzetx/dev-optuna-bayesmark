@@ -151,16 +151,10 @@ class DewanckerRanker:
         sorted_wins = {k: v for k, v in sorted(wins.items(), key=lambda x: x[1])}
         self._ranking = list(reversed(sorted_wins.keys()))
 
-        # TODO(xadrianzetx) Maybe try vectorize.
-        prev_wins = -1
-        borda: List[int] = []
-        for points, num_wins in enumerate(sorted_wins.values()):
-            if num_wins == prev_wins:
-                borda.append(borda[-1])
-            else:
-                borda.append(points)
-            prev_wins = num_wins
-        self._borda = np.array(borda)[::-1]
+        all_wins = np.array(list(sorted_wins.values()))
+        num_wins, num_ties = np.unique(all_wins, return_counts=True)
+        points = np.searchsorted(all_wins, num_wins)
+        self._borda = np.repeat(points, num_ties)[::-1]
 
 
 # TODO(xadrianzetx) Consider proper templating engine.
