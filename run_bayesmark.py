@@ -74,7 +74,7 @@ def partial_report(args: argparse.Namespace) -> None:
             table_buffer.append(df)
 
         summary = pd.merge(*table_buffer, left_index=True, right_index=True)
-        summaries.append(summary)
+        summaries.append(summary.reset_index())
 
     filename = f"{args.dataset}-{args.model}-partial-report.json"
     (
