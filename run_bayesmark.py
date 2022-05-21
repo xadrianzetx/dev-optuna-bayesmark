@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import subprocess
-from typing import Any
+from typing import Any, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,12 +51,13 @@ def partial_report(args: argparse.Namespace) -> None:
     eval_path = os.path.join("runs", _RUN_NAME, "eval")
     time_path = os.path.join("runs", _RUN_NAME, "time")
     studies = os.listdir(eval_path)
-    summaries = []
+    summaries: List[pd.DataFrame] = []
 
     for study in studies:
-        buff = []
-        for rundata in [eval_path, time_path]:
-            with open(os.path.join(rundata, study), "r") as file:
+        table_buffer: List[pd.DataFrame] = []
+        column_buffer: List[str] = []
+        for path in [eval_path, time_path]:
+            with open(os.path.join(path, study), "r") as file:
                 data = json.load(file)
                 df = (
                     xarray.Dataset.from_dict(data["data"])
@@ -64,17 +65,16 @@ def partial_report(args: argparse.Namespace) -> None:
                     .droplevel("suggestion")
                 )
 
-            for k, v in data["meta"]["args"].items():
-                colname = k[2:] if k.startswith("--") else k
-                df[colname] = v
+            for argument, meatadata in data["meta"]["args"].items():
+                colname = argument[2:] if argument.startswith("--") else argument
+                if colname not in column_buffer:
+                    df[colname] = meatadata
+                    column_buffer.append(colname)
 
-            buff.append(df)
+            table_buffer.append(df)
 
-        # FIXME No need to append meta cols twice.
-        df = pd.merge(*buff, left_index=True, right_index=True, suffixes=("", "_drop"))
-        to_drop = [col for col in df.columns if col.endswith("_drop")]
-        df = df.drop(to_drop, axis=1).reset_index()
-        summaries.append(df)
+        summary = pd.merge(*table_buffer, left_index=True, right_index=True)
+        summaries.append(summary)
 
     filename = f"{args.dataset}-{args.model}-partial-report.json"
     (
