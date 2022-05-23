@@ -129,6 +129,18 @@ class DewanckerRanker:
                 return cand
         return candidates[-1]
 
+    def _set_ranking(self, wins: Dict[str, int]) -> None:
+
+        sorted_wins = {k: v for k, v in sorted(wins.items(), key=lambda x: x[1])}
+        self._ranking = list(reversed(sorted_wins.keys()))
+
+    def _set_borda(self, wins: Dict[str, int]) -> None:
+
+        sorted_wins = np.array(sorted(wins.values()))
+        num_wins, num_ties = np.unique(sorted_wins, return_counts=True)
+        points = np.searchsorted(sorted_wins, num_wins)
+        self._borda = np.repeat(points, num_ties)[::-1]
+
     def rank(self, report: PartialReport) -> None:
 
         # Implements https://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
@@ -148,13 +160,8 @@ class DewanckerRanker:
                 break
 
         wins = {optimzier: wins[optimzier] for optimzier in report.optimizers}
-        sorted_wins = {k: v for k, v in sorted(wins.items(), key=lambda x: x[1])}
-        self._ranking = list(reversed(sorted_wins.keys()))
-
-        all_wins = np.array(list(sorted_wins.values()))
-        num_wins, num_ties = np.unique(all_wins, return_counts=True)
-        points = np.searchsorted(all_wins, num_wins)
-        self._borda = np.repeat(points, num_ties)[::-1]
+        self._set_ranking(wins)
+        self._set_borda(wins)
 
 
 # TODO(xadrianzetx) Consider proper templating engine.
