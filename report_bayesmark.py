@@ -131,8 +131,8 @@ class DewanckerRanker:
 
     def _set_ranking(self, wins: Dict[str, int]) -> None:
 
-        sorted_wins = {k: v for k, v in sorted(wins.items(), key=lambda x: x[1])}
-        self._ranking = list(reversed(sorted_wins.keys()))
+        sorted_wins = [k for k, _ in sorted(wins.items(), key=lambda x: x[1])]
+        self._ranking = sorted_wins[::-1]
 
     def _set_borda(self, wins: Dict[str, int]) -> None:
 
