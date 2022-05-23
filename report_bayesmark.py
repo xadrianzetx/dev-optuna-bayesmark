@@ -149,7 +149,7 @@ class DewanckerRanker:
         alpha = DewanckerRanker.pick_alpha(report)
         for metric in self._metrics:
             summaries = report.average_performance(metric)
-            for a, b in itertools.permutations(summaries.keys(), 2):
+            for a, b in itertools.permutations(summaries, 2):
                 _, p_val = mannwhitneyu(summaries[a], summaries[b], alternative="less")
                 if p_val < alpha:
                     wins[a] += 1
