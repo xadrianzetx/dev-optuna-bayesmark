@@ -42,7 +42,7 @@ class AUCMetric(BaseMetric):
 
         aucs: List[float] = list()
         for _, grp in data.groupby("uuid"):
-            auc = np.sum(grp.generalization.cummin() - grp.generalization.min())
+            auc = np.sum(grp.generalization.cummin())
             aucs.append(auc / grp.shape[0])
         return aucs
 
@@ -120,7 +120,7 @@ class DewanckerRanker:
     @staticmethod
     def pick_alpha(report: PartialReport) -> float:
 
-        # Ref: https://github.com/optuna/kurobako/blob/788dd4cf618965a4a5158aa4e13607a5803dea9d/src/report.rs#L412-L424
+        # Ref: https://github.com/optuna/kurobako/blob/788dd4cf618965a4a5158aa4e13607a5803dea9d/src/report.rs#L412-L424  # noqa E503
         num_optimizers = len(report.optimizers)
         candidates = [0.075, 0.05, 0.025, 0.01] * 4 / np.repeat([1, 10, 100, 1000], 4)
 
