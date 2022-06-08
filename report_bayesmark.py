@@ -23,12 +23,17 @@ class BaseMetric(ABC):
     def name(self) -> str:
         ...
 
+    @property
+    def fmt(self) -> int:
+        ...
+
     def calculate(self, data: pd.DataFrame) -> List[float]:
         ...
 
 
 class BestValueMetric(BaseMetric):
     name = "Best value"
+    fmt = 6
 
     def calculate(self, data: pd.DataFrame) -> List[float]:
 
@@ -37,6 +42,7 @@ class BestValueMetric(BaseMetric):
 
 class AUCMetric(BaseMetric):
     name = "AUC"
+    fmt = 3
 
     def calculate(self, data: pd.DataFrame) -> List[float]:
 
@@ -49,6 +55,7 @@ class AUCMetric(BaseMetric):
 
 class ElapsedMetric(BaseMetric):
     name = "Elapsed"
+    fmt = 3
 
     def calculate(self, data: pd.DataFrame) -> List[float]:
 
@@ -210,7 +217,8 @@ class BayesmarkReportBuilder:
             row_buffer.write(f"|{pos}|{solver}|")
             for metric in metrics:
                 mean, variance = report.summarize_solver(solver, metric)
-                row_buffer.write(f"{mean:.5f} +- {np.sqrt(variance):.5f}|")
+                row = f"{mean:.{metric.fmt}f} +- {np.sqrt(variance):.{metric.fmt}f}|"
+                row_buffer.write(row)
 
             self._problems_body.write("".join([row_buffer.getvalue(), _LINE_BREAK]))
             row_buffer.close()
