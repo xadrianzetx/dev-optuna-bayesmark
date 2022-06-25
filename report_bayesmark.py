@@ -1,4 +1,3 @@
-import io
 import itertools
 import os
 from abc import ABC
@@ -11,11 +10,6 @@ import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 from scipy.special import binom
 from scipy.stats import mannwhitneyu
-
-_LINE_BREAK = "\n"
-_TABLE_HEADER = "|Ranking|Solver|"
-_HEADER_FORMAT = "|:---|---:|"
-_OVERALL_HEADER = "|Solver|Borda|Firsts|\n|:---|---:|---:|\n"
 
 Moments = Tuple[float, float]
 
