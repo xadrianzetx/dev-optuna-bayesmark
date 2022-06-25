@@ -185,17 +185,17 @@ class Problem:
 class BayesmarkReportBuilder:
     def __init__(self) -> None:
 
-        self._solvers = set()
-        self._datasets = set()
-        self._models = set()
-        self._firsts = defaultdict(int)
-        self._borda = defaultdict(int)
-        self._metric_precedence = str()
-        self._problems: List[Problem] = []
+        self.solvers = set()
+        self.datasets = set()
+        self.models = set()
+        self.firsts = defaultdict(int)
+        self.borda = defaultdict(int)
+        self.metric_precedence = str()
+        self.problems: List[Problem] = []
 
     def set_precedence(self, metrics: List[BaseMetric]) -> None:
 
-        self._metric_precedence = " -> ".join([m.name for m in metrics])
+        self.metric_precedence = " -> ".join([m.name for m in metrics])
 
     def add_problem(
         self,
@@ -208,7 +208,7 @@ class BayesmarkReportBuilder:
         rows: List[ProblemRow] = []
         positions = np.abs(ranking.borda - (max(ranking.borda) + 1))
         for pos, solver in zip(positions, ranking.solvers):
-            self._solvers.add(solver)
+            self.solvers.add(solver)
             moments: List[Moments] = []
             for metric in metrics:
                 mean, variance = report.summarize_solver(solver, metric)
@@ -216,28 +216,28 @@ class BayesmarkReportBuilder:
 
             rows.append(ProblemRow(pos, solver, moments))
 
-        problem_number = len(self._problems) + 1
-        self._problems.append(Problem(problem_number, name, metrics, rows))
+        problem_number = len(self.problems) + 1
+        self.problems.append(Problem(problem_number, name, metrics, rows))
         return self
 
     def update_leaderboard(self, ranking: DewanckerRanker) -> "BayesmarkReportBuilder":
 
         for solver, borda in ranking:
             if borda == max(ranking.borda):
-                self._firsts[solver] += 1
-            self._borda[solver] += borda
+                self.firsts[solver] += 1
+            self.borda[solver] += borda
         return self
 
     def add_dataset(self, dataset: str) -> "BayesmarkReportBuilder":
 
         # TODO(xadrianzetx) Should update studies section.
-        self._datasets.add(dataset)
+        self.datasets.add(dataset)
         return self
 
     def add_model(self, model: str) -> "BayesmarkReportBuilder":
 
         # TODO(xadrianzetx) Should update recipe section.
-        self._models.add(model)
+        self.models.add(model)
         return self
 
     def assemble_report(self) -> str:
