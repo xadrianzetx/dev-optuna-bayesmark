@@ -3,6 +3,7 @@ import itertools
 import os
 from abc import ABC
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import Dict, Generator, List, Tuple
 
 import numpy as np
@@ -171,7 +172,21 @@ class DewanckerRanker:
         self._set_borda(wins)
 
 
-# TODO(xadrianzetx) Consider proper templating engine.
+@dataclass
+class ProblemRow:
+    pos: int
+    solver: str
+    moments: List[Moments]
+
+
+@dataclass
+class Problem:
+    number: int
+    name: str
+    metrics: List[BaseMetric]
+    rows: List[ProblemRow]
+
+
 class BayesmarkReportBuilder:
     def __init__(self) -> None:
 
