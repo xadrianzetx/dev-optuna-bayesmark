@@ -196,8 +196,7 @@ class BayesmarkReportBuilder:
         self._firsts = defaultdict(int)
         self._borda = defaultdict(int)
         self._metric_precedence = str()
-        self._problems_counter = 1
-        self._problems_body = io.StringIO()
+        self._problems: List[Problem] = []
 
     def set_precedence(self, metrics: List[BaseMetric]) -> None:
 
@@ -211,34 +210,19 @@ class BayesmarkReportBuilder:
         metrics: List[BaseMetric],
     ) -> "BayesmarkReportBuilder":
 
-        if self._problems_body.closed:
-            self._problems_body = io.StringIO()
-
-        problem_header = f"### ({self._problems_counter}) Problem: {name}" + _LINE_BREAK
-        self._problems_body.write(problem_header)
-        metric_names = [f"{m.name} (avg +- std) |" for m in metrics]
-        self._problems_body.write(
-            "".join([_LINE_BREAK, _TABLE_HEADER, *metric_names, _LINE_BREAK])
-        )
-        metric_format = ["---:|" for _ in range(len(metrics))]
-        self._problems_body.write(
-            "".join([_HEADER_FORMAT, *metric_format, _LINE_BREAK])
-        )
-
+        rows: List[ProblemRow] = []
         positions = np.abs(ranking.borda - (max(ranking.borda) + 1))
         for pos, solver in zip(positions, ranking.solvers):
             self._solvers.add(solver)
-            row_buffer = io.StringIO()
-            row_buffer.write(f"|{pos}|{solver}|")
+            moments: List[Moments] = []
             for metric in metrics:
                 mean, variance = report.summarize_solver(solver, metric)
-                row = f"{mean:.{metric.fmt}f} +- {np.sqrt(variance):.{metric.fmt}f}|"
-                row_buffer.write(row)
+                moments.append((round(mean, metric.fmt), round(np.sqrt(variance), metric.fmt)))
 
-            self._problems_body.write("".join([row_buffer.getvalue(), _LINE_BREAK]))
-            row_buffer.close()
+            rows.append(ProblemRow(pos, solver, moments))
 
-        self._problems_counter += 1
+        problem_number = len(self._problems) + 1
+        self._problems.append(Problem(problem_number, name, metrics, rows))
         return self
 
     def update_leaderboard(self, ranking: DewanckerRanker) -> "BayesmarkReportBuilder":
