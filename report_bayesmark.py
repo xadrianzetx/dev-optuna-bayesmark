@@ -8,6 +8,7 @@ from typing import Dict, Generator, List, Tuple
 
 import numpy as np
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader
 from scipy.special import binom
 from scipy.stats import mannwhitneyu
 
@@ -247,31 +248,10 @@ class BayesmarkReportBuilder:
 
     def assemble_report(self) -> str:
 
-        num_datasets = len(self._datasets)
-        num_models = len(self._models)
-
-        overall_body = io.StringIO()
-        overall_body.write(_OVERALL_HEADER)
-        for solver in self._solvers:
-            row = f"|{solver}|{self._borda[solver]}|{self._firsts[solver]}|"
-            overall_body.write("".join([row, _LINE_BREAK]))
-
-        with open("report_template.md") as file:
-            report_template = file.read()
-
-        report = report_template.format(
-            num_solvers=len(self._solvers),
-            num_datasets=num_datasets,
-            num_models=num_models,
-            precedence=self._metric_precedence,
-            num_problems=num_datasets * num_models,
-            overall=overall_body.getvalue(),
-            leaderboards=self._problems_body.getvalue(),
-        )
-
-        overall_body.close()
-        self._problems_body.close()
-        return report
+        loader = FileSystemLoader(".")
+        env = Environment(loader=loader)
+        report_template = env.get_template("report_template.md")
+        return report_template.render(report=self)
 
 
 def build_report() -> None:
