@@ -210,7 +210,7 @@ class BayesmarkReportBuilder:
         positions = np.abs(ranking.borda - (max(ranking.borda) + 1))
         for pos, solver in zip(positions, ranking.solvers):
             self.solvers.add(solver)
-            moments: List[Moments] = []
+            moments: List[FormattedMoments] = []
             for metric in metrics:
                 mean, variance = report.summarize_solver(solver, metric)
                 moments.append((f"{mean:.{metric.fmt}f}", f"{np.sqrt(variance):.{metric.fmt}f}"))
