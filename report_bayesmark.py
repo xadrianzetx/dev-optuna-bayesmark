@@ -12,6 +12,7 @@ from scipy.special import binom
 from scipy.stats import mannwhitneyu
 
 Moments = Tuple[float, float]
+FormattedMoments = Tuple[str, str]
 
 
 class BaseMetric(ABC):
@@ -171,7 +172,7 @@ class DewanckerRanker:
 class ProblemRow:
     pos: int
     solver: str
-    moments: List[Moments]
+    moments: List[FormattedMoments]
 
 
 @dataclass
@@ -212,7 +213,7 @@ class BayesmarkReportBuilder:
             moments: List[Moments] = []
             for metric in metrics:
                 mean, variance = report.summarize_solver(solver, metric)
-                moments.append((round(mean, metric.fmt), round(np.sqrt(variance), metric.fmt)))
+                moments.append((f"{mean:.{metric.fmt}f}", f"{np.sqrt(variance):.{metric.fmt}f}"))
 
             rows.append(ProblemRow(pos, solver, moments))
 
