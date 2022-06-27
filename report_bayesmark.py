@@ -12,7 +12,6 @@ from scipy.special import binom
 from scipy.stats import mannwhitneyu
 
 Moments = Tuple[float, float]
-FormattedMoments = Tuple[str, str]
 
 
 class BaseMetric(ABC):
@@ -169,10 +168,10 @@ class DewanckerRanker:
 
 
 @dataclass
-class ProblemRow:
-    pos: int
-    solver: str
-    moments: List[FormattedMoments]
+class Solver:
+    rank: int
+    name: str
+    results: List[str]
 
 
 @dataclass
@@ -180,7 +179,7 @@ class Problem:
     number: int
     name: str
     metrics: List[BaseMetric]
-    rows: List[ProblemRow]
+    solvers: List[Solver]
 
 
 class BayesmarkReportBuilder:
@@ -206,16 +205,16 @@ class BayesmarkReportBuilder:
         metrics: List[BaseMetric],
     ) -> "BayesmarkReportBuilder":
 
-        rows: List[ProblemRow] = []
+        rows: List[Solver] = []
         positions = np.abs(ranking.borda - (max(ranking.borda) + 1))
         for pos, solver in zip(positions, ranking.solvers):
             self.solvers.add(solver)
-            moments: List[FormattedMoments] = []
+            results: List[str] = []
             for metric in metrics:
                 mean, variance = report.summarize_solver(solver, metric)
-                moments.append((f"{mean:.{metric.fmt}f}", f"{np.sqrt(variance):.{metric.fmt}f}"))
+                results.append(f"{mean:.{metric.fmt}f} +- {np.sqrt(variance):.{metric.fmt}f}")
 
-            rows.append(ProblemRow(pos, solver, moments))
+            rows.append(Solver(pos, solver, results))
 
         problem_number = len(self.problems) + 1
         self.problems.append(Problem(problem_number, name, metrics, rows))

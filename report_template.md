@@ -32,8 +32,8 @@ Please refer to ["A Strategy for Ranking Optimizers using Multiple Criteria"][De
 
 |Ranking|Solver|{%- for metric in problem.metrics -%}{{ metric.name }} (avg +- std)|{% endfor %}
 |:---|---:|{%- for _ in range(problem.metrics|length) -%}---:|{% endfor %}
-{% for row in problem.rows -%}
-|{{ row.pos }}|{{ row.solver }}|{%- for moments in row.moments -%}{{ moments[0] }} +- {{ moments[1] }}|{% endfor %}
+{% for solver in problem.solvers -%}
+|{{ solver.rank }}|{{ solver.name }}|{{ solver.results|join('|') }}|
 {% endfor -%}
 {% endfor %}
 
