@@ -59,11 +59,7 @@ def partial_report(args: argparse.Namespace) -> None:
         for path in [eval_path, time_path]:
             with open(os.path.join(path, study), "r") as file:
                 data = json.load(file)
-                df = (
-                    xarray.Dataset.from_dict(data["data"])
-                    .to_dataframe()
-                    .droplevel("suggestion")
-                )
+                df = xarray.Dataset.from_dict(data["data"]).to_dataframe().droplevel("suggestion")
 
             for argument, meatadata in data["meta"]["args"].items():
                 colname = argument[2:] if argument.startswith("--") else argument
@@ -77,9 +73,16 @@ def partial_report(args: argparse.Namespace) -> None:
         summaries.append(summary.reset_index())
 
     filename = f"{args.dataset}-{args.model}-partial-report.json"
+    sampler_args = (
+        pd.read_json("config.json")
+        .T[1]
+        .reset_index()
+        .rename(columns={"index": "opt", 1: "sampler_args"})
+    )
     (
         pd.concat(summaries)
         .reset_index(drop=True)
+        .merge(sampler_args, on="opt")
         .to_json(os.path.join("partial", filename))
     )
 
