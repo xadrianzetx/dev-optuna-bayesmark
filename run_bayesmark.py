@@ -4,8 +4,10 @@ import os
 import subprocess
 from typing import Any, List
 
+import bayesmark
 import matplotlib.pyplot as plt
 import numpy as np
+import optuna
 import pandas as pd
 import xarray
 from matplotlib import cm, colors
@@ -72,17 +74,20 @@ def partial_report(args: argparse.Namespace) -> None:
         summary = pd.merge(*table_buffer, left_index=True, right_index=True)
         summaries.append(summary.reset_index())
 
-    filename = f"{args.dataset}-{args.model}-partial-report.json"
-    sampler_args = (
+    environment_data = (
         pd.read_json("config.json")
         .T[1]
         .reset_index()
         .rename(columns={"index": "opt", 1: "sampler_args"})
     )
+    environment_data["optuna_version"] = optuna.__version__
+    environment_data["bayesmark_version"] = bayesmark.__version__
+
+    filename = f"{args.dataset}-{args.model}-partial-report.json"
     (
         pd.concat(summaries)
         .reset_index(drop=True)
-        .merge(sampler_args, on="opt")
+        .merge(environment_data, on="opt")
         .to_json(os.path.join("partial", filename))
     )
 
