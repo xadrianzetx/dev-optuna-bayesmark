@@ -1,5 +1,7 @@
 import itertools
+import json
 import os
+import uuid
 from abc import ABC
 from collections import defaultdict
 from dataclasses import dataclass
@@ -64,8 +66,7 @@ class ElapsedMetric(BaseMetric):
 class PartialReport:
     def __init__(self, data: pd.DataFrame) -> None:
         self._data = data
-        # TODO This class should also be able to provide report
-        # metadate for recipes and stuff.
+        self.id = uuid.uuid4().hex
 
     @property
     def optimizers(self) -> List[str]:
@@ -94,6 +95,24 @@ class PartialReport:
             run_metrics = metric.calculate(data)
             performance[solver] = run_metrics
         return performance
+
+    def summarize_study(self, solver: str) -> Tuple[int, int]:
+
+        solver_data = self._data[self._data.opt == solver]
+        budget = max(solver_data.iter) + 1
+        repeats = int(solver_data.shape[0] / budget)
+        return budget, repeats
+
+    def get_solver_metadata(self, solver: str) -> str:
+
+        data = self._data[self._data.opt == solver].sampler_args.reset_index(drop=True)[0]
+        return json.dumps(data, indent=4)
+
+    def get_version_string(self) -> str:
+
+        optuna_version = self._data.optuna_version
+        bayesmark_version = self._data.bayesmark_version
+        return f"optuna={optuna_version}, bayesmark={bayesmark_version}"
 
 
 class DewanckerRanker:
