@@ -274,9 +274,10 @@ class BayesmarkReportBuilder:
 
         version = report.get_version_string()
         for solver in report.optimizers:
-            id = uuid.uuid4().hex
-            args = report.get_solver_metadata(solver)
-            self.solvers[solver] = Solver(id, solver, args, version)
+            if solver not in self.solvers:
+                id = uuid.uuid4().hex
+                args = report.get_solver_metadata(solver)
+                self.solvers[solver] = Solver(id, solver, args, version)
         return self
 
     def update_leaderboard(self, ranking: DewanckerRanker) -> "BayesmarkReportBuilder":
