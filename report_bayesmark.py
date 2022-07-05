@@ -330,9 +330,9 @@ def build_report() -> None:
         all_metrics = [*metrics, elapsed]
 
         report_builder = (
-            report_builder.add_problem(problem_name, partial, ranking, all_metrics)
-            .add_dataset(dataset)
-            .add_model(model)
+            report_builder.add_solvers(partial)
+            .add_studies(partial, ranking, all_metrics)
+            .add_problem(partial, problem_name, all_metrics)
             .update_leaderboard(ranking)
         )
 
