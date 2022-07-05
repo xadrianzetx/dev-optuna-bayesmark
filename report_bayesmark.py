@@ -222,39 +222,61 @@ class Problem:
 class BayesmarkReportBuilder:
     def __init__(self) -> None:
 
-        self.solvers = set()
+        self.solvers = {}
         self.datasets = set()
         self.models = set()
         self.firsts = defaultdict(int)
         self.borda = defaultdict(int)
         self.metric_precedence = str()
         self.problems: List[Problem] = []
+        self.studies: List[Study] = []
 
     def set_precedence(self, metrics: List[BaseMetric]) -> None:
 
         self.metric_precedence = " -> ".join([m.name for m in metrics])
 
-    def add_problem(
+    def add_studies(
         self,
-        name: str,
         report: PartialReport,
         ranking: DewanckerRanker,
         metrics: List[BaseMetric],
     ) -> "BayesmarkReportBuilder":
 
-        rows: List[Solver] = []
         positions = np.abs(ranking.borda - (max(ranking.borda) + 1))
         for pos, solver in zip(positions, ranking.solvers):
-            self.solvers.add(solver)
             results: List[str] = []
             for metric in metrics:
                 mean, variance = report.summarize_solver(solver, metric)
                 results.append(f"{mean:.{metric.fmt}f} +- {np.sqrt(variance):.{metric.fmt}f}")
 
-            rows.append(Solver(pos, solver, results))
+            budget, repeats = report.summarize_study(solver)
+            study = Study(
+                id=uuid.uuid4().hex,
+                problem_id=report.id,
+                budget=budget,
+                repeats=repeats,
+                solver=self.solvers.get(solver),
+                results=Results(pos, results),
+            )
+            self.studies.append(study)
+        return self
 
+    def add_problem(
+        self, report: PartialReport, name: str, metrics: List[BaseMetric]
+    ) -> "BayesmarkReportBuilder":
+
+        studies = [study for study in self.studies if study.problem_id == report.id]
         problem_number = len(self.problems) + 1
-        self.problems.append(Problem(problem_number, name, metrics, rows))
+        self.problems.append(Problem(report.id, problem_number, name, metrics, studies))
+        return self
+
+    def add_solvers(self, report: PartialReport) -> "BayesmarkReportBuilder":
+
+        version = report.get_version_string()
+        for solver in report.optimizers:
+            id = uuid.uuid4().hex
+            args = report.get_solver_metadata(solver)
+            self.solvers[solver] = Solver(id, solver, args, version)
         return self
 
     def update_leaderboard(self, ranking: DewanckerRanker) -> "BayesmarkReportBuilder":
