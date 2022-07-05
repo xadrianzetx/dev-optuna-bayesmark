@@ -222,7 +222,7 @@ class Problem:
 class BayesmarkReportBuilder:
     def __init__(self) -> None:
 
-        self.solvers = {}
+        self.solvers: Dict[str, Solver] = {}
         self.datasets = set()
         self.models = set()
         self.firsts = defaultdict(int)
