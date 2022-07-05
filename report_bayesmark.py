@@ -188,17 +188,35 @@ class DewanckerRanker:
 
 @dataclass
 class Solver:
-    rank: int
+    id: str
     name: str
-    results: List[str]
+    args: str
+    version: str
+
+
+@dataclass
+class Results:
+    rank: int
+    values: List[str]
+
+
+@dataclass
+class Study:
+    id: str
+    problem_id: str
+    budget: int
+    repeats: int
+    solver: Solver
+    results: Results
 
 
 @dataclass
 class Problem:
+    id: str
     number: int
     name: str
     metrics: List[BaseMetric]
-    solvers: List[Solver]
+    studies: List[Study]
 
 
 class BayesmarkReportBuilder:
