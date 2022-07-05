@@ -110,8 +110,8 @@ class PartialReport:
 
     def get_version_string(self) -> str:
 
-        optuna_version = self._data.optuna_version
-        bayesmark_version = self._data.bayesmark_version
+        optuna_version = self._data.optuna_version[0]
+        bayesmark_version = self._data.bayesmark_version[0]
         return f"optuna={optuna_version}, bayesmark={bayesmark_version}"
 
 
