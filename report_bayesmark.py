@@ -140,10 +140,9 @@ class DewanckerRanker:
         return self._borda
 
     @staticmethod
-    def pick_alpha(report: PartialReport) -> float:
+    def pick_alpha(num_optimizers: int) -> float:
 
         # Ref: https://github.com/optuna/kurobako/blob/788dd4cf618965a4a5158aa4e13607a5803dea9d/src/report.rs#L412-L424  # noqa E503
-        num_optimizers = len(report.optimizers)
         candidates = [0.075, 0.05, 0.025, 0.01] * 4 / np.repeat([1, 10, 100, 1000], 4)
 
         for cand in candidates:
@@ -168,7 +167,8 @@ class DewanckerRanker:
         # Implements https://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
         # Section 2.1.1
         wins = defaultdict(int)
-        alpha = DewanckerRanker.pick_alpha(report)
+        num_optimizers = len(report.optimizers)
+        alpha = DewanckerRanker.pick_alpha(num_optimizers)
         for metric in self._metrics:
             summaries = report.average_performance(metric)
             for a, b in itertools.permutations(summaries, 2):
