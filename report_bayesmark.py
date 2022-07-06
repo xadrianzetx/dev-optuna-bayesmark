@@ -223,8 +223,6 @@ class BayesmarkReportBuilder:
     def __init__(self) -> None:
 
         self.solvers: Dict[str, Solver] = {}
-        self.datasets = set()
-        self.models = set()
         self.firsts = defaultdict(int)
         self.borda = defaultdict(int)
         self.metric_precedence = str()
@@ -286,18 +284,6 @@ class BayesmarkReportBuilder:
             if borda == max(ranking.borda):
                 self.firsts[solver] += 1
             self.borda[solver] += borda
-        return self
-
-    def add_dataset(self, dataset: str) -> "BayesmarkReportBuilder":
-
-        # TODO(xadrianzetx) Should update studies section.
-        self.datasets.add(dataset)
-        return self
-
-    def add_model(self, model: str) -> "BayesmarkReportBuilder":
-
-        # TODO(xadrianzetx) Should update recipe section.
-        self.models.add(model)
         return self
 
     def assemble_report(self) -> str:

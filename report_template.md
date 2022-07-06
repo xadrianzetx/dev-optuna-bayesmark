@@ -2,8 +2,8 @@
 # Benchmark Result Report
 
 * Number of Solvers: {{ report.solvers|length }}
-* Number of Models: {{ report.models|length }}
-* Number of Datasets: {{ report.datasets|length }}
+* Number of Models: 7
+* Number of Datasets: 5
 * Number of Problems: {{ report.problems|length }}
 * Metrics Precedence: {{ report.metric_precedence }}
 
