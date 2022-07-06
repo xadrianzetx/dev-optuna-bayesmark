@@ -1,3 +1,4 @@
+[Format reference.](https://github.com/optuna/optuna/issues/3464#issue-1199704879)
 # Benchmark Result Report
 
 * Number of Solvers: {{ report.solvers|length }}
