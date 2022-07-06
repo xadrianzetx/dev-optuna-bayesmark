@@ -32,12 +32,55 @@ Please refer to ["A Strategy for Ranking Optimizers using Multiple Criteria"][De
 ### ({{ problem.number }}) Problem: {{ problem.name }}
 
 |Ranking|Solver|{%- for metric in problem.metrics -%}{{ metric.name }} (avg +- std)|{% endfor %}
-|:---|---:|{%- for _ in range(problem.metrics|length) -%}---:|{% endfor %}
-{% for solver in problem.solvers -%}
-|{{ solver.rank }}|{{ solver.name }}|{{ solver.results|join('|') }}|
+|---:|:---|{%- for _ in range(problem.metrics|length) -%}---:|{% endfor %}
+{% for study in problem.studies -%}
+|{{ study.results.rank }}|[{{ study.solver.name }}](#id-{{ study.solver.id }}) ([study](#id-{{ study.id }}))|{{ study.results.values|join('|') }}|
 {% endfor -%}
 {% endfor %}
+## Solver
+{% for _, solver in report.solvers.items() %}
+### ID: {{ solver.id }}
 
+recipe:
+```json
+{
+    name: "{{ solver.name }}"
+    optuna: {{ solver.args }}
+}
+```
+
+specification:
+```json
+{
+  "name": "{{ solver.name }}",
+  "attrs": {
+    "github": "https://github.com/optuna/optuna",
+    "paper": "Akiba, Takuya, et al. \"Optuna: A next-generation hyperparameter optimization framework.\" Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining. ACM, 2019.",
+    "version": "{{ solver.version }}"
+  },
+  "capabilities": [
+    "UNIFORM_CONTINUOUS",
+    "UNIFORM_DISCRETE",
+    "LOG_UNIFORM_CONTINUOUS",
+    "LOG_UNIFORM_DISCRETE",
+    "CATEGORICAL",
+    "CONDITIONAL",
+    "MULTI_OBJECTIVE",
+    "CONCURRENT"
+  ]
+}
+```
+{% endfor %}
+## Studies
+{% for study in report.studies %}
+### ID: {{ study.id }}
+
+- problem: {{ (report.problems|selectattr("id", "eq", study.problem_id)|list)[0].name }}
+- solver: [{{ study.solver.name }}](#id-{{ study.solver.id }})
+- budget: {{ study.budget }}
+- repeats: {{ study.repeats }}
+- concurrency: 1
+{% endfor %}
 ## Datasets
 
 * [Breast Cancer Wisconsin](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_breast_cancer.html#sklearn.datasets.load_breast_cancer)
