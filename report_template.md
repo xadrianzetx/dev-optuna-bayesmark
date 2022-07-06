@@ -37,7 +37,7 @@ Please refer to ["A Strategy for Ranking Optimizers using Multiple Criteria"][De
 |{{ study.results.rank }}|[{{ study.solver.name }}](#id-{{ study.solver.id }}) ([study](#id-{{ study.id }}))|{{ study.results.values|join('|') }}|
 {% endfor -%}
 {% endfor %}
-## Solver
+## Solvers
 {% for _, solver in report.solvers.items() %}
 ### ID: {{ solver.id }}
 
