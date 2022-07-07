@@ -69,7 +69,7 @@ class PartialReport:
         self.id = uuid.uuid4().hex
 
     @property
-    def optimizers(self) -> List[str]:
+    def solvers(self) -> List[str]:
 
         return list(self._data.opt.unique())
 
@@ -167,8 +167,8 @@ class DewanckerRanker:
         # Implements https://proceedings.mlr.press/v64/dewancker_strategy_2016.pdf
         # Section 2.1.1
         wins = defaultdict(int)
-        num_optimizers = len(report.optimizers)
-        alpha = DewanckerRanker.pick_alpha(num_optimizers)
+        num_solvers = len(report.solvers)
+        alpha = DewanckerRanker.pick_alpha(num_solvers)
         for metric in self._metrics:
             summaries = report.average_performance(metric)
             for a, b in itertools.permutations(summaries, 2):
@@ -181,7 +181,7 @@ class DewanckerRanker:
             if no_ties:
                 break
 
-        wins = {optimzier: wins[optimzier] for optimzier in report.optimizers}
+        wins = {solver: wins[solver] for solver in report.solvers}
         self._set_ranking(wins)
         self._set_borda(wins)
 
@@ -271,7 +271,7 @@ class BayesmarkReportBuilder:
     def add_solvers(self, report: PartialReport) -> "BayesmarkReportBuilder":
 
         version = report.get_version_string()
-        for solver in report.optimizers:
+        for solver in report.solvers:
             if solver not in self.solvers:
                 id = uuid.uuid4().hex
                 args = report.get_solver_metadata(solver)
