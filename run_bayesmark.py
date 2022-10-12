@@ -96,9 +96,11 @@ def visuals(args: argparse.Namespace) -> None:
 
     filename = f"{args.dataset}-{args.model}-partial-report.json"
     df = pd.read_json(os.path.join("partial", filename))
+    df["best_value"] = df.groupby(["opt", "uuid"]).generalization.cummin()
+
     stats = (
         df.groupby(["opt", "iter"])
-        .generalization.agg(["mean", "std"])
+        .best_value.agg(["mean", "std"])
         # FIXME Better naming for those cols.
         .rename(columns={"mean": "best_mean", "std": "best_std"})
         .reset_index()
