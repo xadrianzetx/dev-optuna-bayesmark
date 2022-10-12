@@ -132,25 +132,21 @@ def make_plot(
 ) -> None:
 
     idx = 0 if plot_warmup else 10
-    argpos = summary.best_mean.expanding().apply(np.argmin).astype(int)
-    best_found = summary.best_mean.values[argpos.values]
-    sdev = summary.best_std.values[argpos.values]
-
-    if len(best_found) <= idx:
+    if len(summary.best_mean) <= idx:
         return
 
     ax.fill_between(
-        np.arange(len(best_found))[idx:],
-        (best_found - sdev)[idx:],
-        (best_found + sdev)[idx:],
+        np.arange(len(summary.best_mean))[idx:],
+        (summary.best_mean - summary.best_std)[idx:],
+        (summary.best_mean + summary.best_std)[idx:],
         color=color,
         alpha=0.25,
         step="mid",
     )
 
     ax.plot(
-        np.arange(len(best_found))[idx:],
-        best_found[idx:],
+        np.arange(len(summary.best_mean))[idx:],
+        summary.best_mean[idx:],
         color=color,
         label=optimizer,
         drawstyle="steps-mid",
