@@ -41,7 +41,7 @@ jobs:
         # TODO Make it conditional for debug?
         # dataset: [breast, digits, iris, wine, diabetes]
         # model: [kNN, SVM, DT, RF, MLP-sgd, ada, linear]
-        dataset: [diabetes, iris]
+        dataset: [diabetes, iris, wine]
         model: [kNN, SVM]
 
     steps:
