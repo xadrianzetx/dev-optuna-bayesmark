@@ -85,6 +85,8 @@ class PartialReport:
         if solver_data.shape[0] == 0:
             raise ValueError(f"{solver} not found in report.")
 
+        # NOTE: Pandas uses N-1 degrees of freedom to calculate variance, while numpy uses N.
+        # This will cause small differences between plot and report when calculating standard dev.
         run_metrics = metric.calculate(solver_data)
         return np.mean(run_metrics), np.var(run_metrics)
 
